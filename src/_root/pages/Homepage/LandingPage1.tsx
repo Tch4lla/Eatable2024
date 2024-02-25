@@ -4,7 +4,7 @@ const LandingPage = () => {
   return (
     <>
       <div className="max-w-7xl flex flex-wrap lg:w-1/2 lg:h-screen/2">
-        <div className="flex-start relative z-10 bg-white pb-8 sm:pb-16 md:pb-20 lg:w-full lg:max-w-2xl lg:pb-28 xl:pb-32 lg:mr-4 lg:ml-0">
+        <div className="relative z-10 bg-white pb-8 sm:pb-16 md:pb-20 lg:w-full lg:max-w-2xl lg:pb-28 xl:pb-32 lg:mr-4 lg:ml-0 lg:w-full">
           <svg
             className="absolute inset-y-0 right-0 hidden h-full w-48 translate-x-1/2 transform text-white lg:block"
             fill="currentColor"
@@ -17,7 +17,12 @@ const LandingPage = () => {
           <main className="mx-auto mt-10 max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
             <div className="sm:text-center lg:text-left">
               <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl md:text-7xl">
-                <span className="block xl:inline">Eatable</span>
+                <span className="block xl:inline">
+                  <img
+                    src="/assets/images/Eatable_logo.png"
+                    alt="logo"
+                  />
+                </span>
                 <br />
                 <span className="block text-indigo-600 xl:inline">
                   Share the love
@@ -47,11 +52,20 @@ const LandingPage = () => {
             </div>
           </main>
         </div>
-        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-6/10">
+        {/* New div for mobile responsiveness */}
+        <div className="w-full lg:hidden">
+          <img
+            className="object-cover w-full h-96"
+            src="/assets/images/cheers.jpg"
+            alt="mobile-responsive-image"
+          />
+        </div>
+        {/* Hidden on mobile screens */}
+        <div className="hidden lg:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-6/10">
           <img
             className="object-cover w-full h-96 sm:h-full md:h-full lg:h-full"
             src="/assets/images/heroPhoto.JPG"
-            alt=""
+            alt="hero-image"
           />
         </div>
       </div>
