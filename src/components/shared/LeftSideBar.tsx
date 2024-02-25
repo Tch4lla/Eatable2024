@@ -13,7 +13,7 @@ const LeftSideBar = () => {
   const { user } = useUserContext();
 
   useEffect(() => {
-    if (isSuccess) navigate(0);
+    if (isSuccess) navigate('/');
   }, [isSuccess]);
 
   return (
