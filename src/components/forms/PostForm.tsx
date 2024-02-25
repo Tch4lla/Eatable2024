@@ -75,7 +75,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         title: 'Please try again',
       });
     }
-    navigate('/');
+    navigate('/home');
   }
   return (
     <Form {...form}>
