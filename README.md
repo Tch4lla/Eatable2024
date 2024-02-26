@@ -10,40 +10,38 @@ Full-stack social media app where users can upload and tag photos of places or f
 A user is able to create their own username and password. Passwords are hashed for privacy. Once logged in they are able to access their own profile which has their previously uploaded photos. These photos are also in the network feed. When a photo is selected, users are shown a detailed page with the title of the photo, it's description, any tags, they can like the photo, and the owner of the photo can delete it. Photos can also be commented on by users.  
 
 ## Features
-<br>
 **Homepage**
-Once the user is sucessfully logged in, they are directed to the home page, which is a feed of all the users' posts
+: Once the user is sucessfully logged in, they are directed to the home page, which is a feed of all the users' posts
 
 ![Landing page and home](https://github.com/Tch4lla/Eatable2024/assets/99618731/7400864b-cbb3-4f41-849b-23d3f88464d1)
 
 **User Profile**
-Each user is able to create their own profile. They can upload an image of themselves, change their name, their username, email, as well as create their own bio
-<br>
+: Each user is able to create their own profile. They can upload an image of themselves, change their name, their username, email, as well as create their own bio
 <div align="center">
 <img src = "https://media.giphy.com/media/5NWwfauLI22ihCoGrM/giphy.gif">
 </div>
 
 **Post Creation**
-The main function of the application is for users to create their own 'Eatable', simply a post which other users can view. 
+: The main function of the application is for users to create their own 'Eatable', simply a post which other users can view. 
 <div align="center">
 <img src = "https://media.giphy.com/media/fBTNcGjajx9BcfC0D5/giphy.gif">
 </div>
 
 **Post Details**
-The details page serees users with more information about the post. It also shows related posts of the user who created the Eatable. 
+: The details page serees users with more information about the post. It also shows related posts of the user who created the Eatable. 
 <br>
 <div align="center">
 <img src = "https://media.giphy.com/media/3PdgJZVg4DWnDHGWGZ/giphy.gif">
 </div>
 
 **Pagination**
-Users can search though posts to find ones that would interst them most. 
+: Users can search though posts to find ones that would interst them most. 
 <div align="center">
 <img src = "https://media.giphy.com/media/fG9DbllWPGXVj2Qgct/giphy.gif">
 </div>
 
 **Likes and Saves**
-Users can like and safe posts. The posts that a user likes will be stored in a list on the  
+: Users can like and safe posts. The posts that a user likes will be stored in a list on the  
 <div align="center">
 <img src = "https://media.giphy.com/media/BF2Oiy1kJnlUjI9q0l/giphy.gif">
 </div>
