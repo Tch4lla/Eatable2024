@@ -1,4 +1,5 @@
-# Eatable
+# <a href="https://eatsharelove.net">Eatable: Eat, Share, Love</a> <-- View the live site here
+
 Full-stack social media app where users can upload and tag photos of places or foods. Intended for users who have dietary restrictions and need/want to help finding places or things to eat which meet their dietary needs.
 
 ![Readme background ](https://github.com/Tch4lla/Eatable2024/assets/99618731/b2151ae1-c37f-4c9b-93db-0c426f4e6988)
