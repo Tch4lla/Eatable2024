@@ -109,7 +109,7 @@ const LeftSideBar = () => {
               Log into your account
             </p>
             <Button
-              variant="ghost"
+              className="shad-button_primary"
               onClick={() => navigate('/sign-in')}
             >
               Get started
