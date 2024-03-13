@@ -17,7 +17,6 @@ import Loader from '@/components/shared/Loader';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSignInAccount } from '@/lib/react-query/queriesAndMutations';
 import { useUserContext } from '@/context/AuthContext';
-
 const SigninForm = () => {
   const { toast } = useToast();
   const { checkAuthUser } = useUserContext();
@@ -54,7 +53,7 @@ const SigninForm = () => {
       if (isLoggedIn) {
         form.reset();
 
-        navigate('/home');
+        navigate('/');
       } else {
         return toast({
           variant: 'destructive',
@@ -69,10 +68,13 @@ const SigninForm = () => {
   return (
     <Form {...form}>
       <div className="sm:w-420 flex-center flex-col">
-        <img
-          src="/assets/images/Eatable_logo.png"
-          alt="logo"
-        />
+        <Link to="/">
+          <img
+            src="/assets/images/Eatable_logo.png"
+            alt="logo"
+          />
+        </Link>
+
         <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">
           Login to your account
         </h2>

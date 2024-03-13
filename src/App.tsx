@@ -4,7 +4,7 @@ import {
   CreatePost,
   Explore,
   Home,
-  LandingPage1,
+  // LandingPage1,
   LikedPosts,
   PostDetails,
   Profile,
@@ -24,10 +24,6 @@ const App = () => {
     <main className="flex h-screen">
       <Routes>
         {/* {public routes for all users} */}
-        <Route
-          path="/"
-          element={<LandingPage1 />}
-        />
         <Route element={<AuthLayout />}>
           <Route
             path="/sign-in"
@@ -41,7 +37,7 @@ const App = () => {
         {/* {private routes for signed in users} */}
         <Route element={<RootLayout />}>
           <Route
-            path="/home"
+            path="/"
             element={<Home />}
           />
           <Route
