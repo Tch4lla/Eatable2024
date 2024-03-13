@@ -17,7 +17,7 @@ const RootLayout = () => {
     if (!user.id) {
       timeoutId = setTimeout(() => {
         setShowModal(true);
-      }, 30000);
+      }, 90000);
     }
 
     return () => {
