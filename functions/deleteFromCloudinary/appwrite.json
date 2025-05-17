@@ -1,0 +1,16 @@
+{
+  "name": "deleteFromCloudinary",
+  "runtime": "node-18.0",
+  "path": "src/index.js",
+  "entrypoint": "deleteFromCloudinary",
+  "execute": ["any"],
+  "events": [],
+  "schedule": "",
+  "timeout": 15,
+  "enabled": true,
+  "vars": {
+    "CLOUDINARY_CLOUD_NAME": "{{_env.VITE_CLOUDINARY_CLOUD_NAME}}",
+    "CLOUDINARY_API_KEY": "{{_env.VITE_CLOUDINARY_API_KEY}}",
+    "CLOUDINARY_API_SECRET": "{{_env.VITE_CLOUDINARY_API_SECRET}}"
+  }
+}

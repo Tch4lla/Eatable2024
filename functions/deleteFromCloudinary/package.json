@@ -1,0 +1,11 @@
+{
+  "name": "delete-from-cloudinary",
+  "version": "1.0.0",
+  "description": "Appwrite Function to delete images from Cloudinary",
+  "main": "src/index.js",
+  "type": "module",
+  "dependencies": {
+    "cloudinary": "^2.6.1",
+    "node-appwrite": "^11.0.0"
+  }
+}

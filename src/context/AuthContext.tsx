@@ -29,6 +29,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const navigate = useNavigate();
   const checkAuthUser = async () => {
+    setIsLoading(true);
     try {
       const currentAccount = await getCurrentUser();
       if (currentAccount) {
@@ -42,10 +43,17 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         setIsAuthenticated(true);
         return true;
+      } else {
+        // Handle case where user is not authenticated
+        setUser(INITIAL_USER);
+        setIsAuthenticated(false);
+        return false;
       }
-      return false;
     } catch (error) {
-      console.log(error);
+      console.log('Error in checkAuthUser:', error);
+      // Reset user state on error
+      setUser(INITIAL_USER);
+      setIsAuthenticated(false);
       return false;
     } finally {
       setIsLoading(false);
@@ -53,13 +61,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    // Check if user has authentication cookie
+    const cookieFallback = localStorage.getItem('cookieFallback');
+
+    // Only redirect if we're on a protected route and there's no cookie
     if (
-      localStorage.getItem('cookieFallback') === '[]' ||
-      localStorage.getItem('cookieFallback') === null
+      (cookieFallback === '[]' || cookieFallback === null) &&
+      window.location.pathname !== '/' &&
+      !window.location.pathname.startsWith('/sign-')
     ) {
       navigate('/');
     }
 
+    // Always try to check auth status, but don't force redirect
     checkAuthUser();
   }, []);
   const value = {
