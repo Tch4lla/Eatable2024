@@ -3,7 +3,6 @@ import { useUserContext } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
-import ThemeToggle from './ThemeToggle';
 
 const BottomBar = () => {
   const { user } = useUserContext();
