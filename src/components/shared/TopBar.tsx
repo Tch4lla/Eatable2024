@@ -46,7 +46,10 @@ const TopBar = () => {
               >
                 <img
                   src={
-                    user.imageUrl || '/assets/images/profile-placeholder.svg'
+                    user.imageUrl instanceof URL
+                      ? user.imageUrl.toString()
+                      : user.imageUrl ||
+                        '/assets/images/profile-placeholder.svg'
                   }
                   alt="profile-picture"
                   className="h-8 w-8 rounded-full"
