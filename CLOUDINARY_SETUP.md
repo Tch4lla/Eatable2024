@@ -54,7 +54,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset_name
 
 The application now uses Cloudinary for image handling:
 
-1. **Image Upload**: When a user uploads an image, it's sent directly to Cloudinary
+1. **Image Upload**: When a user uploads an image, it's sent directly to Cloudinary using an unsigned upload preset
 2. **Image Optimization**: Cloudinary automatically optimizes the image and returns a URL
 3. **Image Storage**: The optimized image URL is stored in the Appwrite database
 4. **Image Display**: When displaying images, we use Cloudinary's optimization parameters
@@ -65,8 +65,18 @@ The implementation includes several optimization features:
 
 - **Automatic Quality**: `quality: 'auto'` lets Cloudinary determine the optimal quality
 - **Format Conversion**: `fetch_format: 'auto'` serves images in WebP for supported browsers
-- **Responsive Images**: `dpr: 'auto'` and `responsive: true` for device-specific optimization
-- **Lazy Loading**: `loading: 'lazy'` for better page performance
+- **Responsive Images**: Images are served with appropriate dimensions
+- **Browser-Compatible**: Implementation works directly in the browser without server-side code
+
+## Important Note About Image Deletion
+
+Since this implementation runs entirely in the browser, image deletion from Cloudinary requires additional setup:
+
+1. For a complete solution, you would need to create a server-side function or API endpoint to handle image deletion
+2. This endpoint would use your Cloudinary API secret to authenticate deletion requests
+3. The current implementation logs a warning when attempting to delete images
+
+For a production environment, consider implementing a secure server-side deletion endpoint.
 
 ## Troubleshooting
 

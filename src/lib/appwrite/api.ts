@@ -61,21 +61,31 @@ export async function signInAccount(user: { email: string, password: string }) {
 
 export async function getCurrentUser() {
 	try {
+		// Check if user is authenticated
 		const currentAccount = await account.get()
 
-		if (!currentAccount) throw Error
+		if (!currentAccount) {
+			console.log("No current account found")
+			return null
+		}
 
+		// Get user from database
 		const currentUser = await databases.listDocuments(
 			appwriteConfig.databaseId,
 			appwriteConfig.userCollectionId,
 			[Query.equal('accountId', currentAccount.$id)]
 		)
 
-		if (!currentUser) throw Error
+		if (!currentUser || currentUser.documents.length === 0) {
+			console.log("No user found in database")
+			return null
+		}
 
 		return currentUser.documents[0]
 	} catch (error) {
-		console.log(error)
+		console.log("Error in getCurrentUser:", error)
+		// Return null instead of undefined to indicate no user
+		return null
 	}
 }
 

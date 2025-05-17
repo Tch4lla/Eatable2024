@@ -51,19 +51,17 @@ const RootLayout = () => {
             <div className="modal-content px-4 relative">
               <button
                 onClick={closeModal}
-                className="absolute right-4 top-2 rounded-sm opacity-70 hover:opacity-100 focus:outline-none"
+                className="modal-close-btn"
+                aria-label="Close"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="h-4 w-4"
                 >
                   <line
                     x1="18"
@@ -78,7 +76,6 @@ const RootLayout = () => {
                     y2="18"
                   ></line>
                 </svg>
-                <span className="sr-only">Close</span>
               </button>
               <div className="modal-left">
                 <img
