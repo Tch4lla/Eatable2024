@@ -1,5 +1,12 @@
 import React from "react";
 
+export type Theme = 'dark' | 'light';
+
+export type IThemeContextType = {
+    theme: Theme;
+    toggleTheme: () => void;
+};
+
 export type IContextType = {
     user: IUser;
     isLoading: boolean;

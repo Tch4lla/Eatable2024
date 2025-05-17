@@ -2,7 +2,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  darkMode: ['class'],
+  darkMode: 'class',
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
@@ -32,6 +32,10 @@ module.exports = {
         'light-2': '#EFEFEF',
         'light-3': '#7878A3',
         'light-4': '#5C5C7B',
+        'light-bg-1': '#F5F5F5',
+        'light-bg-2': '#E8E8E8',
+        'light-bg-3': '#DADADA',
+        'light-bg-4': '#CCCCCC',
       },
       screens: {
         xs: '480px',

@@ -10,7 +10,29 @@
   }
 
   body {
-    @apply bg-dark-1 text-white min-h-screen font-inter;
+    @apply min-h-screen font-inter transition-colors duration-200;
+  }
+
+  .light body {
+    @apply bg-light-bg-1 text-dark-1;
+  }
+
+  .dark body {
+    @apply bg-dark-1 text-white;
+  }
+
+  /* Light mode text overrides */
+  .light .tiny-medium,
+  .light .small-medium,
+  .light .base-medium,
+  .light .body-medium {
+    @apply text-dark-1;
+  }
+
+  .light .text-light-2,
+  .light .text-light-3,
+  .light .text-light-4 {
+    @apply text-dark-1;
   }
 }
 
@@ -188,7 +210,15 @@
 
   /* Bottom bar */
   .bottom-bar {
-    @apply z-50 flex-between w-full sticky bottom-0 rounded-t-[20px] bg-dark-2 px-5 py-4 md:hidden;
+    @apply z-50 flex-between w-full sticky bottom-0 rounded-t-[20px] px-5 py-4 md:hidden transition-colors duration-200;
+  }
+
+  .dark .bottom-bar {
+    @apply bg-dark-2;
+  }
+
+  .light .bottom-bar {
+    @apply bg-light-bg-2;
   }
 
   /* File uploader */
@@ -197,7 +227,15 @@
   }
 
   .file_uploader-label {
-    @apply text-light-4 text-center small-regular w-full p-4 border-t border-t-dark-4;
+    @apply text-center small-regular w-full p-4 border-t;
+  }
+
+  .dark .file_uploader-label {
+    @apply text-light-4 border-t-dark-4;
+  }
+
+  .light .file_uploader-label {
+    @apply text-dark-4 border-t-light-bg-4;
   }
 
   .file_uploader-box {
@@ -219,7 +257,15 @@
 
   /* Left sidebar */
   .leftsidebar {
-    @apply hidden md:flex px-6 py-10 flex-col justify-between min-w-[270px] bg-dark-2;
+    @apply hidden md:flex px-6 py-10 flex-col justify-between min-w-[270px] transition-colors duration-200;
+  }
+
+  .dark .leftsidebar {
+    @apply bg-dark-2;
+  }
+
+  .light .leftsidebar {
+    @apply bg-light-bg-2;
   }
 
   .leftsidebar-link {
@@ -228,7 +274,15 @@
 
   /* Post Card */
   .post-card {
-    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 w-full max-w-screen-sm;
+    @apply rounded-3xl p-5 lg:p-7 w-full max-w-screen-sm transition-colors duration-200;
+  }
+
+  .dark .post-card {
+    @apply bg-dark-3 border-dark-4;
+  }
+
+  .light .post-card {
+    @apply bg-light-bg-2 border-light-bg-4;
   }
 
   .post-card_img {
@@ -237,12 +291,28 @@
 
   /* Topbar */
   .topbar {
-    @apply sticky top-0 z-50 md:hidden bg-dark-2 w-full;
+    @apply sticky top-0 z-50 md:hidden w-full transition-colors duration-200;
+  }
+
+  .dark .topbar {
+    @apply bg-dark-2;
+  }
+
+  .light .topbar {
+    @apply bg-light-bg-2;
   }
 
   /* User card */
   .user-card {
-    @apply flex-center flex-col gap-4 border border-dark-4 rounded-[20px] px-5 py-8;
+    @apply flex-center flex-col gap-4 rounded-[20px] px-5 py-8 transition-colors duration-200;
+  }
+
+  .dark .user-card {
+    @apply bg-dark-2 border-dark-4;
+  }
+
+  .light .user-card {
+    @apply bg-light-bg-2 border-light-bg-4;
   }
 }
 
@@ -250,7 +320,15 @@
   /* SHADCN COMPONENTS */
   /* Form */
   .shad-form_label {
+    /* Base styles */
+  }
+
+  .dark .shad-form_label {
     @apply text-white !important;
+  }
+
+  .light .shad-form_label {
+    @apply text-dark-1 !important;
   }
 
   .shad-form_message {
@@ -258,11 +336,27 @@
   }
 
   .shad-input {
-    @apply h-12 bg-dark-4 border-none placeholder:text-light-4 focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-light-3 !important;
+    @apply h-12 border-none focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-light-3 !important;
+  }
+
+  .dark .shad-input {
+    @apply bg-dark-4 placeholder:text-light-4 !important;
+  }
+
+  .light .shad-input {
+    @apply bg-light-bg-3 placeholder:text-dark-4 !important;
   }
 
   .shad-textarea {
-    @apply h-36 bg-dark-3 rounded-xl border-none focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-light-3 !important;
+    @apply h-36 rounded-xl border-none focus-visible:ring-1 focus-visible:ring-offset-1 ring-offset-light-3 !important;
+  }
+
+  .dark .shad-textarea {
+    @apply bg-dark-3 !important;
+  }
+
+  .light .shad-textarea {
+    @apply bg-light-bg-3 !important;
   }
 
   /* Button */
@@ -271,11 +365,27 @@
   }
 
   .shad-button_dark_4 {
-    @apply h-12 bg-dark-4 px-5 text-light-1 flex gap-2 !important;
+    @apply h-12 flex gap-2 !important;
+  }
+
+  .dark .shad-button_dark_4 {
+    @apply bg-dark-4 text-light-1 !important;
+  }
+
+  .light .shad-button_dark_4 {
+    @apply bg-light-bg-3 text-dark-1 !important;
   }
 
   .shad-button_ghost {
-    @apply flex gap-4 items-center justify-start hover:bg-transparent hover:text-white !important;
+    @apply flex gap-4 items-center justify-start hover:bg-transparent !important;
+  }
+
+  .dark .shad-button_ghost:hover {
+    @apply text-white !important;
+  }
+
+  .light .shad-button_ghost:hover {
+    @apply text-dark-1 !important;
   }
 }
 
