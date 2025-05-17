@@ -78,11 +78,66 @@ export function getOptimizedImageUrl(publicId: string, width = 800, height = 800
  */
 export async function deleteFromCloudinary(publicId: string) {
     try {
-        // In browser environment, we can't directly delete from Cloudinary
-        // We would need a server-side function or API endpoint to handle this
-        // For now, we'll just return a success status
-        console.warn('Deletion in browser environment requires a server-side function');
+        // TEMPORARY SOLUTION: Until the Appwrite Function is deployed,
+        // we'll just log a message and return success
+        console.log(`[MOCK DELETE] Would delete image with ID: ${publicId}`);
+        console.info('To enable actual deletion, deploy the Appwrite Function and update the function ID');
+
+        // Return success status for now
         return { status: 'ok' };
+
+        /* 
+        TO ENABLE ACTUAL DELETION:
+        1. Deploy the Appwrite Function from the functions/deleteFromCloudinary directory
+        2. Get the Function ID from the Appwrite Console
+        3. Replace 'YOUR_FUNCTION_ID' below with your actual Function ID
+        4. Uncomment this code and remove the temporary solution above
+        // Import Appwrite client and functions
+        const { Client, Functions } = await import('appwrite');
+
+        // Initialize Appwrite client
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
+
+        const functions = new Functions(client);
+
+        // Call the Appwrite Function to delete the image from Cloudinary
+        // Replace 'YOUR_FUNCTION_ID' with your actual function ID after deployment
+        const execution = await functions.createExecution(
+            'YOUR_FUNCTION_ID',
+            JSON.stringify({ publicId }),
+            false
+        );
+
+        // Use type assertion to access execution properties
+        const executionData = execution as any;
+
+        // Check if the execution was successful
+        if (executionData.status === 'completed') {
+            try {
+                // Try to parse the response
+                let responseData;
+                if (typeof executionData.response === 'string') {
+                    responseData = JSON.parse(executionData.response);
+                } else if (typeof executionData.stdout === 'string') {
+                    responseData = JSON.parse(executionData.stdout);
+                } else if (executionData.response && typeof executionData.response === 'object') {
+                    responseData = executionData.response;
+                }
+
+                // Check if we have a successful response
+                if (responseData && responseData.success) {
+                    return { status: 'ok' };
+                }
+            } catch (parseError) {
+                console.error('Error parsing function response:', parseError);
+            }
+        }
+
+        console.error('Failed to delete image from Cloudinary:', execution);
+        return { status: 'error' };
+        */
     } catch (error) {
         console.error('Error deleting from Cloudinary:', error);
         return { status: 'error' };
