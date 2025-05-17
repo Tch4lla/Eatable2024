@@ -38,7 +38,7 @@ export type IUpdatePost = {
     postId: string;
     caption: string;
     imageId: string;
-    imageUrl: URL;
+    imageUrl: URL | string;
     file: File[];
     location?: string;
     tags?: string;
@@ -49,7 +49,7 @@ export type IUser = {
     name: string;
     username: string;
     email: string;
-    imageUrl: string;
+    imageUrl: string | URL;
     bio: string;
 };
 

@@ -1,6 +1,7 @@
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 import { ID, Query } from "appwrite";
-import { account, appwriteConfig, avatars, databases, storage } from "./config";
+import { account, appwriteConfig, avatars, databases } from "./config";
+import { uploadToCloudinary, getOptimizedImageUrl, deleteFromCloudinary } from "../cloudinary/api";
 
 export async function createUserAccount(user: INewUser) {
 	try {
@@ -33,7 +34,7 @@ export async function saveUserToDB(user: {
 	accountId: string;
 	email: string;
 	name: string;
-	imageUrl: URL;
+	imageUrl: URL | string;
 	username?: string
 }) {
 	try {
@@ -89,12 +90,12 @@ export async function signOutAccount() {
 
 export async function createPost(post: INewPost) {
 	try {
-		//upload image to storage
+		//upload image to Cloudinary
 		const uploadedFile = await uploadFile(post.file[0])
 		if (!uploadedFile) throw Error
 
-		//Get file Url
-		const fileUrl = getFilePreview(uploadedFile.$id)
+		//Get optimized file Url
+		const fileUrl = uploadedFile.url // Cloudinary already returns the URL
 		console.log("fileUrl: ", fileUrl)
 
 		if (!fileUrl) {
@@ -114,7 +115,7 @@ export async function createPost(post: INewPost) {
 				creator: post.userId,
 				caption: post.caption,
 				imageUrl: fileUrl,
-				imageId: uploadedFile.$id,
+				imageId: uploadedFile.$id, // This is the Cloudinary public_id
 				location: post.location,
 				tags: tags
 			}
@@ -133,12 +134,9 @@ export async function createPost(post: INewPost) {
 
 export async function uploadFile(file: File) {
 	try {
-		const uploadedFile = await storage.createFile(
-			appwriteConfig.storageId,
-			ID.unique(),
-			file
-		)
-		return uploadedFile
+		// Upload to Cloudinary instead of Appwrite storage
+		const uploadedFile = await uploadToCloudinary(file);
+		return uploadedFile;
 	} catch (error) {
 		console.log(error)
 	}
@@ -146,16 +144,9 @@ export async function uploadFile(file: File) {
 
 export function getFilePreview(fileId: string) {
 	try {
-
-		const fileUrl = storage.getFilePreview(
-			appwriteConfig.storageId,
-			fileId,
-			2000,
-			2000,
-			"top",
-			100
-		)
-		return fileUrl
+		// Get optimized image URL from Cloudinary
+		const fileUrl = getOptimizedImageUrl(fileId);
+		return fileUrl;
 	} catch (error) {
 		console.log(error)
 	}
@@ -163,8 +154,9 @@ export function getFilePreview(fileId: string) {
 
 export async function deleteFile(fileId: string) {
 	try {
-		await storage.deleteFile(appwriteConfig.storageId, fileId)
-		return { status: "ok" }
+		// Delete from Cloudinary instead of Appwrite storage
+		const result = await deleteFromCloudinary(fileId);
+		return result;
 	} catch (error) {
 		console.log(error)
 	}
@@ -252,16 +244,23 @@ export async function updatePost(post: IUpdatePost) {
 		}
 
 		if (hasFileToUpdate) {
+			// Upload new file to Cloudinary
 			const uploadedFile = await uploadFile(post.file[0])
 			if (!uploadedFile) throw Error
 
-			//Get file Url
-			const fileUrl = getFilePreview(uploadedFile.$id)
+			// Get optimized file URL directly from Cloudinary response
+			const fileUrl = uploadedFile.url
 
 			if (!fileUrl) {
 				deleteFile(uploadedFile.$id)
 				throw Error
 			}
+
+			// If we're updating the image, delete the old one first
+			if (post.imageId) {
+				await deleteFile(post.imageId)
+			}
+
 			image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id }
 		}
 
@@ -282,7 +281,10 @@ export async function updatePost(post: IUpdatePost) {
 			}
 		)
 		if (!updatedPost) {
-			await deleteFile(post.imageId)
+			// If update fails and we uploaded a new image, delete it
+			if (hasFileToUpdate) {
+				await deleteFile(image.imageId)
+			}
 			throw Error
 		}
 
@@ -377,15 +379,20 @@ export async function updateUser(user: IUpdateUser) {
 		};
 
 		if (hasFileToUpdate) {
-			// Upload new file to appwrite storage
+			// Upload new file to Cloudinary
 			const uploadedFile = await uploadFile(user.file[0]);
 			if (!uploadedFile) throw Error;
 
-			// Get new file url
-			const fileUrl = getFilePreview(uploadedFile.$id);
+			// Get optimized file URL directly from Cloudinary response
+			const fileUrl = uploadedFile.url;
 			if (!fileUrl) {
 				await deleteFile(uploadedFile.$id);
 				throw Error;
+			}
+
+			// If we're updating the image, delete the old one first
+			if (user.imageId) {
+				await deleteFile(user.imageId);
 			}
 
 			image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
@@ -414,11 +421,6 @@ export async function updateUser(user: IUpdateUser) {
 			}
 			// If no new file uploaded, just throw error
 			throw Error;
-		}
-
-		// Safely delete old file after successful update
-		if (user.imageId && hasFileToUpdate) {
-			await deleteFile(user.imageId);
 		}
 
 		return updatedUser;
