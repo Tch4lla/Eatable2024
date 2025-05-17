@@ -5,6 +5,7 @@ import { INITIAL_USER, useUserContext } from '@/context/AuthContext';
 import { sidebarLinks } from '@/constants';
 import { INavLink } from '@/types';
 import { Button } from '../ui/button';
+import ThemeToggle from './ThemeToggle';
 
 const LeftSideBar = () => {
   const { pathname } = useLocation();
@@ -81,17 +82,20 @@ const LeftSideBar = () => {
               })}
             </ul>
           </div>
-          <Button
-            variant="ghost"
-            className="shad-button_ghost"
-            onClick={() => signOut()}
-          >
-            <img
-              src="/assets/icons/logout.svg"
-              alt="logout"
-            />
-            <p className="small-meduim lg:base-medium">Logout</p>
-          </Button>
+          <div className="flex flex-col gap-3">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              className="shad-button_ghost"
+              onClick={() => signOut()}
+            >
+              <img
+                src="/assets/icons/logout.svg"
+                alt="logout"
+              />
+              <p className="small-meduim lg:base-medium">Logout</p>
+            </Button>
+          </div>
         </nav>
       ) : (
         <div className="leftsidebar">

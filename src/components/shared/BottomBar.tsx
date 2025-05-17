@@ -1,10 +1,12 @@
 import { bottombarLinks } from '@/constants';
 import { useUserContext } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 
 const BottomBar = () => {
   const { user } = useUserContext();
+  const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   return (
@@ -32,6 +34,15 @@ const BottomBar = () => {
               </Link>
             );
           })}
+          <div className="flex-center flex-col gap-1 p-2">
+            <span className="text-xl">{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <p
+              className="tiny-medium text-light-2"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </p>
+          </div>
         </section>
       ) : (
         <section className="bottom-bar">

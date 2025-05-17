@@ -76,7 +76,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           onClick={handleLikePost}
           className="cursor-pointer"
         />
-        <p className="small-medium lg:big-medium">{likes?.length}</p>
+        <p className="small-medium lg:big-medium dark:text-light-1 light:text-dark-1">
+          {likes?.length}
+        </p>
       </div>
       <div className="flex gap-2">
         {isSavingPost || isDeletingSaved ? (

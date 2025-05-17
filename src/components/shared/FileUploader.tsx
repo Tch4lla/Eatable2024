@@ -30,7 +30,7 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
   return (
     <div
       {...getRootProps()}
-      className="flex flex-center flex-col bg-dark-3 rounded-xl cursor-pointer"
+      className="flex flex-center flex-col dark:bg-dark-3 light:bg-light-bg-3 rounded-xl cursor-pointer transition-colors duration-200"
     >
       <input
         {...getInputProps()}
@@ -55,10 +55,12 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
             height={77}
             alt="file-upload"
           />
-          <h3 className="base-medium text-light-2 mb-2 mt-6">
+          <h3 className="base-medium dark:text-light-2 light:text-dark-2 mb-2 mt-6">
             Drag your photos here
           </h3>
-          <p className="text-light-4 small-regular mb-6">SVG, PNG, JPG</p>
+          <p className="dark:text-light-4 light:text-dark-4 small-regular mb-6">
+            SVG, PNG, JPG
+          </p>
           <Button className="shad-button_dark_4">Select from device</Button>
         </div>
       )}
