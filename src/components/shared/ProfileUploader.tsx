@@ -25,7 +25,7 @@ const ProfileUploader = ({
     isCloudinaryUrl && mediaUrl.includes('/upload/')
       ? mediaUrl.replace(
           '/upload/',
-          '/upload/w_300,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
         )
       : fileUrl;
 

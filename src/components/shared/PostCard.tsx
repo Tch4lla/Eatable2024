@@ -23,7 +23,7 @@ const PostCard = ({ post }: PostCardProps) => {
                 post?.creator?.imageUrl.includes('cloudinary.com')
                   ? post.creator.imageUrl.replace(
                       '/upload/',
-                      '/upload/w_120,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                      '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
                     )
                   : post?.creator?.imageUrl ||
                     '/assets/icons/profile-placeholder.svg'
