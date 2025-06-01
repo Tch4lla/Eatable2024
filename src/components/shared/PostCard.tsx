@@ -3,7 +3,7 @@ import { formatDateString } from '@/lib/utils';
 import { Models } from 'appwrite';
 import { Link } from 'react-router-dom';
 import PostStats from './PostStats';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type PostCardProps = {
   post: Models.Document;

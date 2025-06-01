@@ -12,7 +12,6 @@ import { useUserContext } from '@/context/AuthContext';
 import { useGetUserById } from '@/lib/react-query/queriesAndMutations';
 import Loader from '@/components/shared/Loader';
 import { useState, useEffect } from 'react';
-import { getOptimizedImageUrl } from '@/lib/cloudinary/api';
 
 // Import components directly to avoid lazy loading overhead on profile page
 import GridPostList from '@/components/shared/GridPostList';
@@ -35,7 +34,7 @@ const Profile = () => {
   const { user } = useUserContext();
   const { pathname } = useLocation();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'liked'>('posts');
+  const [, setActiveTab] = useState<'posts' | 'liked'>('posts');
 
   // Optimize data fetching with proper caching
   const { data: currentUser, isLoading } = useGetUserById(id || '');

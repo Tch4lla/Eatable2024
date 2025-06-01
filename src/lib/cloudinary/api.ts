@@ -69,7 +69,7 @@ export async function uploadToCloudinary(file: File) {
  * @returns A Promise that resolves to the resized file
  */
 async function resizeImageBeforeUpload(file: File): Promise<File> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         try {
             const img = new Image();
             img.src = URL.createObjectURL(file);
@@ -267,10 +267,13 @@ export async function deleteFromCloudinary(publicId: string) {
  * @returns A Promise that resolves to the base64 string
  */
 function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
+        reader.onerror = () => {
+            console.error('Error reading file as base64');
+            resolve(''); // Return empty string on error
+        };
     });
 }
