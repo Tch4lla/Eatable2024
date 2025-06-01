@@ -74,7 +74,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           width={20}
           height={20}
           onClick={handleLikePost}
-          className="cursor-pointer"
+          className={`cursor-pointer ${
+            checkIsLiked(likes, userId) ? 'like-icon-active' : 'like-icon'
+          }`}
         />
         <p className="small-medium lg:big-medium dark:text-light-1 light:text-dark-1">
           {likes?.length}
@@ -90,7 +92,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
             width={20}
             height={20}
             onClick={handleSavePost}
-            className="cursor-pointer"
+            className={`cursor-pointer ${
+              isSaved ? 'save-icon-active' : 'save-icon'
+            }`}
           />
         )}
       </div>

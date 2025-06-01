@@ -200,7 +200,44 @@
   }
 
   .profile-tab {
-    @apply flex-center gap-3 py-4 w-48 bg-dark-2  transition flex-1 xl:flex-initial;
+    @apply flex-center gap-3 py-4 w-48 transition flex-1 xl:flex-initial;
+  }
+
+  .dark .profile-tab {
+    @apply bg-dark-2 text-light-1;
+  }
+
+  .light .profile-tab {
+    @apply bg-light-bg-2 text-dark-1;
+  }
+
+  .dark .active-tab {
+    @apply bg-dark-3;
+  }
+
+  .light .active-tab {
+    @apply bg-light-bg-3;
+  }
+
+  /* Like and Save icons */
+  .like-icon,
+  .save-icon {
+    @apply transition-colors duration-200;
+  }
+
+  .like-icon-active,
+  .save-icon-active {
+    @apply transition-colors duration-200;
+  }
+
+  .dark .like-icon-active,
+  .dark .save-icon-active {
+    filter: brightness(1);
+  }
+
+  .light .like-icon-active,
+  .light .save-icon-active {
+    filter: brightness(1);
   }
 
   /* Saved */
