@@ -72,6 +72,33 @@ export function getOptimizedImageUrl(publicId: string, width = 800, height = 800
 }
 
 /**
+ * Gets a circular profile image URL from Cloudinary
+ * @param publicId The public ID of the image in Cloudinary
+ * @param size The desired size of the circular image
+ * @returns The circular profile image URL
+ */
+export function getProfileImageUrl(publicId: string, size = 300) {
+    try {
+        // Create a Cloudinary URL with circle crop parameters
+        const url = buildCloudinaryUrl(publicId, {
+            width: size,
+            crop: 'fill',
+            aspectRatio: '1:1',
+            gravity: 'auto',
+            radius: 'max',
+            quality: 'auto',
+            fetchFormat: 'auto',
+            background: 'rgb:262c35',
+        });
+
+        return url;
+    } catch (error) {
+        console.error('Error getting profile image URL:', error);
+        return null;
+    }
+}
+
+/**
  * Deletes an image from Cloudinary
  * @param publicId The public ID of the image in Cloudinary
  * @returns Status of the deletion

@@ -17,6 +17,18 @@ const ProfileUploader = ({
   const [file, setFile] = useState<File[]>([]);
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
 
+  // Check if the mediaUrl is a Cloudinary URL and contains a public ID
+  const isCloudinaryUrl = mediaUrl && mediaUrl.includes('cloudinary.com');
+
+  // If it's a Cloudinary URL, use the circular transformation
+  const displayUrl =
+    isCloudinaryUrl && mediaUrl.includes('/upload/')
+      ? mediaUrl.replace(
+          '/upload/',
+          '/upload/w_300,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+        )
+      : fileUrl;
+
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
       setFile(acceptedFiles);
@@ -42,9 +54,9 @@ const ProfileUploader = ({
 
       <div className="cursor-pointer flex-center gap-4">
         <img
-          src={fileUrl || '/assets/icons/profile-placeholder.svg'}
+          src={displayUrl || '/assets/icons/profile-placeholder.svg'}
           alt="image"
-          className="h-24 w-24 rounded-full object-cover object-top"
+          className="h-24 w-24 rounded-full object-cover object-center"
         />
         <p className="text-primary-500 small-regular md:bbase-semibold">
           {label}

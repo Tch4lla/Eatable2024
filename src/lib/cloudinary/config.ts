@@ -24,8 +24,13 @@ export function buildCloudinaryUrl(publicId: string, options: Record<string, any
     if (options.width) transformations.push(`w_${options.width}`);
     if (options.height) transformations.push(`h_${options.height}`);
     if (options.crop) transformations.push(`c_${options.crop}`);
+    if (options.aspectRatio) transformations.push(`ar_${options.aspectRatio}`);
     if (options.quality) transformations.push(`q_${options.quality}`);
     if (options.fetchFormat) transformations.push(`f_${options.fetchFormat}`);
+    if (options.radius) transformations.push(`r_${options.radius}`);
+    if (options.gravity) transformations.push(`g_${options.gravity}`);
+    if (options.background) transformations.push(`b_${options.background}`);
+    if (options.border) transformations.push(`bo_${options.border}`);
 
     // Add transformations to URL if any exist
     if (transformations.length > 0) {

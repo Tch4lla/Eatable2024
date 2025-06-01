@@ -19,11 +19,17 @@ const PostCard = ({ post }: PostCardProps) => {
           <Link to={`/profile/${post.creator.$id}`}>
             <img
               src={
-                post?.creator?.imageUrl ||
-                '/assets/icons/profile-placeholder.svg'
+                post?.creator?.imageUrl &&
+                post?.creator?.imageUrl.includes('cloudinary.com')
+                  ? post.creator.imageUrl.replace(
+                      '/upload/',
+                      '/upload/w_120,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                    )
+                  : post?.creator?.imageUrl ||
+                    '/assets/icons/profile-placeholder.svg'
               }
               alt="creator"
-              className="rounded-full w-12 lg:h-12"
+              className="rounded-full w-12 h-12 object-cover"
             />
           </Link>
           <div className="flex flex-col">

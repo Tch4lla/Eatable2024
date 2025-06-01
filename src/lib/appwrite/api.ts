@@ -1,7 +1,7 @@
-import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "../../types";
 import { ID, Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases } from "./config";
-import { uploadToCloudinary, getOptimizedImageUrl, deleteFromCloudinary } from "../cloudinary/api";
+import { uploadToCloudinary, getOptimizedImageUrl, getProfileImageUrl, deleteFromCloudinary } from "../cloudinary/api";
 
 export async function createUserAccount(user: INewUser) {
 	try {
@@ -24,15 +24,19 @@ export async function createUserAccount(user: INewUser) {
 		)
 		if (!newAccount) throw Error;
 
-		let imageUrl = avatars.getInitials(user.name);
+		let imageUrl = avatars.getInitials(user.name).toString();
 		let imageId = "";
 
 		// If user uploaded a profile picture, upload it to Cloudinary
 		if (user.file && user.file.length > 0) {
 			const uploadedFile = await uploadFile(user.file[0]);
 			if (uploadedFile) {
-				imageUrl = uploadedFile.url;
-				imageId = uploadedFile.$id;
+				// Use profile image URL with circular transformation
+				const profileUrl = getProfileImageUrl(uploadedFile.$id);
+				if (profileUrl) {
+					imageUrl = profileUrl as string;
+					imageId = uploadedFile.$id;
+				}
 			}
 		}
 
@@ -56,7 +60,7 @@ export async function saveUserToDB(user: {
 	accountId: string;
 	email: string;
 	name: string;
-	imageUrl: URL | string;
+	imageUrl: string;
 	imageId?: string;
 	username?: string
 }) {
@@ -175,10 +179,13 @@ export async function uploadFile(file: File) {
 	}
 }
 
-export function getFilePreview(fileId: string) {
+export function getFilePreview(fileId: string, isProfileImage = false) {
 	try {
 		// Get optimized image URL from Cloudinary
-		const fileUrl = getOptimizedImageUrl(fileId);
+		// Use profile image transformation for profile pictures
+		const fileUrl = isProfileImage
+			? getProfileImageUrl(fileId)
+			: getOptimizedImageUrl(fileId);
 		return fileUrl;
 	} catch (error) {
 		console.log(error)
@@ -416,19 +423,20 @@ export async function updateUser(user: IUpdateUser) {
 			const uploadedFile = await uploadFile(user.file[0]);
 			if (!uploadedFile) throw Error;
 
-			// Get optimized file URL directly from Cloudinary response
-			const fileUrl = uploadedFile.url;
+			// Get profile image URL with circular transformation
+			const fileUrl = getProfileImageUrl(uploadedFile.$id);
 			if (!fileUrl) {
 				await deleteFile(uploadedFile.$id);
 				throw Error;
 			}
+			const profileUrl = fileUrl as string;
 
 			// If we're updating the image, delete the old one first
 			if (user.imageId) {
 				await deleteFile(user.imageId);
 			}
 
-			image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+			image = { ...image, imageUrl: profileUrl, imageId: uploadedFile.$id };
 		}
 
 		//  Update user
