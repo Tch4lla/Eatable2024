@@ -35,9 +35,18 @@ const GridPostList = ({
             {showUser && (
               <div className="flex items-center justify-start gap-2 flex-1">
                 <img
-                  src={post.creator.imageUrl}
+                  src={
+                    post.creator.imageUrl &&
+                    post.creator.imageUrl.includes('cloudinary.com')
+                      ? post.creator.imageUrl.replace(
+                          '/upload/',
+                          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                        )
+                      : post.creator.imageUrl ||
+                        '/assets/icons/profile-placeholder.svg'
+                  }
                   alt="creator"
-                  className="h-8 w-8 rounded-full"
+                  className="h-8 w-8 rounded-full object-cover"
                 />
                 <p className="line-clamp-1">{post.creator.name}</p>
               </div>
