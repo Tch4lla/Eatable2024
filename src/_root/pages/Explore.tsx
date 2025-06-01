@@ -1,4 +1,3 @@
-import GridPostList from '@/components/shared/GridPostList';
 import Loader from '@/components/shared/Loader';
 import SearchResults from '@/components/shared/SearchResults';
 import { Input } from '@/components/ui/input';
@@ -7,22 +6,80 @@ import {
   useGetPosts,
   useSearchPost,
 } from '@/lib/react-query/queriesAndMutations';
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useState,
+  lazy,
+  Suspense,
+  useCallback,
+  useRef,
+} from 'react';
 import { useInView } from 'react-intersection-observer';
 
+// Lazy load the GridPostList component for better initial load performance
+const GridPostList = lazy(() => import('@/components/shared/GridPostList'));
+
 const Explore = () => {
-  const { ref, inView } = useInView();
-  const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    rootMargin: '100px',
+  });
+
+  const {
+    data: posts,
+    fetchNextPage,
+    hasNextPage,
+    isLoading: isPostsLoading,
+  } = useGetPosts();
   const [searchValue, setSearchValue] = useState('');
-  const debouncedValue = useDebounce(searchValue, 500);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Increase debounce time to reduce API calls during typing
+  const debouncedValue = useDebounce(searchValue, 800);
+
   const { data: searchedPosts, isFetching: isSearchFetching } =
     useSearchPost(debouncedValue);
 
-  useEffect(() => {
-    if (inView && !searchValue) fetchNextPage();
-  }, [inView, searchValue]);
+  // Optimize infinite scrolling
+  const handleLoadMore = useCallback(() => {
+    if (inView && !searchValue && hasNextPage && !isPostsLoading) {
+      fetchNextPage();
+    }
+  }, [inView, searchValue, hasNextPage, fetchNextPage, isPostsLoading]);
 
-  if (!posts) {
+  useEffect(() => {
+    handleLoadMore();
+  }, [handleLoadMore]);
+
+  // Track when search begins/ends for UI optimization
+  useEffect(() => {
+    if (debouncedValue) {
+      setIsSearching(true);
+    } else {
+      // Small delay to prevent UI flicker when clearing search
+      const timer = setTimeout(() => {
+        setIsSearching(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [debouncedValue]);
+
+  // Focus search input when component mounts
+  useEffect(() => {
+    if (searchInputRef.current) {
+      // Delay focus to prevent mobile keyboard from popping up immediately
+      const timer = setTimeout(() => {
+        // Only focus on larger screens to avoid mobile keyboard issues
+        if (window.innerWidth > 768) {
+          searchInputRef.current?.focus();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  if (!posts && isPostsLoading) {
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -33,7 +90,7 @@ const Explore = () => {
   const shouldShowSearchResults = searchValue !== '';
   const shouldShowPosts =
     !shouldShowSearchResults &&
-    posts.pages.every((item) => item?.documents.length === 0);
+    posts?.pages.every((item) => item?.documents.length === 0);
 
   return (
     <div className="explore-container">
@@ -47,6 +104,7 @@ const Explore = () => {
             height={24}
           />
           <Input
+            ref={searchInputRef}
             type="text"
             placeholder="Search"
             className="explore-search"
@@ -79,22 +137,40 @@ const Explore = () => {
         ) : shouldShowPosts ? (
           <p className="text-light-4 mt-10 text-center w-full">End of Posts</p>
         ) : (
-          posts.pages.map((item, index) => (
+          <Suspense
+            fallback={
+              <div className="flex-center w-full">
+                <Loader />
+              </div>
+            }
+          >
+            {/* Flatten all pages of posts into a single array for continuous grid */}
             <GridPostList
-              key={`page-${index}`}
-              posts={item?.documents}
+              posts={posts?.pages.flatMap((page) => page?.documents || [])}
             />
-          ))
+          </Suspense>
         )}
       </div>
-      {hasNextPage && !searchValue && (
+
+      {/* Improved visibility of loading indicator */}
+      {hasNextPage && !searchValue && !isSearching && (
         <div
           ref={ref}
-          className="mt-10"
+          className="mt-10 h-20 flex-center w-full"
         >
           <Loader />
         </div>
       )}
+
+      {/* Show message when all posts are loaded */}
+      {!hasNextPage &&
+        !searchValue &&
+        posts?.pages &&
+        posts.pages.length > 0 && (
+          <p className="text-light-4 mt-10 text-center w-full py-4">
+            You've reached the end of posts
+          </p>
+        )}
     </div>
   );
 };

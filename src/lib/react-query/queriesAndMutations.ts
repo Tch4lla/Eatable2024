@@ -176,6 +176,9 @@ export const useGetUserById = (userId: string) => {
     queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
     queryFn: () => getUserById(userId),
     enabled: !!userId,
+    staleTime: 1000 * 60 * 10, // Consider user data fresh for 10 minutes
+    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+    refetchOnMount: false, // Don't refetch when component mounts if data is fresh
   });
 };
 
@@ -199,6 +202,9 @@ export const useGetUserPosts = (userId?: string) => {
     queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
     queryFn: () => getUserPosts(userId),
     enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // Consider user posts fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    refetchOnMount: false, // Don't refetch when component mounts if data is fresh
   });
 };
 
