@@ -45,10 +45,17 @@ const Profile = () => {
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
             src={
-              currentUser.imageUrl || '/assets/icons/profile-placeholder.svg'
+              currentUser.imageUrl &&
+              currentUser.imageUrl.includes('cloudinary.com')
+                ? currentUser.imageUrl.replace(
+                    '/upload/',
+                    '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                  )
+                : currentUser.imageUrl ||
+                  '/assets/icons/profile-placeholder.svg'
             }
             alt="profile"
-            className="w-28 h-28 lg:h-36 lg:w-36 rounded-full"
+            className="w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover"
           />
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">

@@ -41,12 +41,15 @@ const LeftSideBar = () => {
             >
               <img
                 src={
-                  user.imageUrl instanceof URL
-                    ? user.imageUrl.toString()
+                  user.imageUrl && user.imageUrl.includes('cloudinary.com')
+                    ? user.imageUrl.replace(
+                        '/upload/',
+                        '/upload/w_150,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                      )
                     : user.imageUrl || '/assets/icons/profile-placeholder.svg'
                 }
                 alt="profile-picture"
-                className="h-14 w-14 rounded-full"
+                className="h-14 w-14 rounded-full object-cover"
               />
               <div className="flex flex-col">
                 <p className="body-bold">{user.name}</p>
