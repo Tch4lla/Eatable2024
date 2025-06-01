@@ -96,12 +96,6 @@ export const useDeleteSavePost = () => {
   })
 }
 
-export const useGetCurentUser = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.GET_CURRENT_USER],
-    queryFn: getCurrentUser
-  })
-}
 
 export const useGetPostById = (postId: string) => {
   return useQuery({

@@ -1,6 +1,6 @@
 import {
   useDeleteSavePost,
-  useGetCurentUser,
+  useGetCurrentUser,
   useLikePost,
   useSavePost,
 } from '@/lib/react-query/queriesAndMutations';
@@ -23,7 +23,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const { mutate: deleteSavePost, isPending: isDeletingSaved } =
     useDeleteSavePost();
 
-  const { data: currentUser } = useGetCurentUser();
+  const { data: currentUser } = useGetCurrentUser();
 
   const savePostRecord = currentUser?.save.find(
     (record: Models.Document) => record.post.$id === post?.$id
