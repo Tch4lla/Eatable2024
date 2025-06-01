@@ -106,7 +106,7 @@ const UpdateProfile = () => {
               control={form.control}
               name="file"
               render={({ field }) => (
-                <FormItem className="flex">
+                <FormItem className="flex flex-col items-center gap-4">
                   <FormControl>
                     <ProfileUploader
                       fieldChange={field.onChange}
