@@ -6,9 +6,14 @@ import { convertFileToUrl } from '@/lib/utils';
 type ProfileUploaderProps = {
   fieldChange: (files: File[]) => void;
   mediaUrl: string;
+  label?: string;
 };
 
-const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
+const ProfileUploader = ({
+  fieldChange,
+  mediaUrl,
+  label = 'Change profile photo',
+}: ProfileUploaderProps) => {
   const [file, setFile] = useState<File[]>([]);
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
 
@@ -42,7 +47,7 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
           className="h-24 w-24 rounded-full object-cover object-top"
         />
         <p className="text-primary-500 small-regular md:bbase-semibold">
-          Change profile photo
+          {label}
         </p>
       </div>
     </div>

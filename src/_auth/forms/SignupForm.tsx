@@ -15,17 +15,17 @@ import { useToast } from '@/components/ui/use-toast';
 import { SignupValidation } from '@/lib/validation';
 import { z } from 'zod';
 import { Loader } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   useCreateUserAccount,
   useSignInAccount,
 } from '@/lib/react-query/queriesAndMutations';
 import { useUserContext } from '@/context/AuthContext';
+import ProfileUploader from '@/components/shared/ProfileUploader';
 
 const SignupForm = () => {
   const { toast } = useToast();
   const { checkAuthUser } = useUserContext();
-  const navigate = useNavigate();
   const { mutateAsync: createUserAccount, isPending: isCreatingUser } =
     useCreateUserAccount();
   const { mutateAsync: signInAccount } = useSignInAccount();
@@ -38,6 +38,7 @@ const SignupForm = () => {
       username: '',
       email: '',
       password: '',
+      file: [],
     },
   });
 
@@ -45,12 +46,34 @@ const SignupForm = () => {
   async function onSubmit(values: z.infer<typeof SignupValidation>) {
     try {
       const newUser = await createUserAccount(values);
+
+      // Check if the response is an error
+      if (newUser instanceof Error) {
+        // Check if it's a duplicate email error
+        if (newUser.message === 'A user with this email already exists') {
+          return toast({
+            variant: 'destructive',
+            title: 'Email already in use',
+            description:
+              'Please use a different email address or sign in with your existing account.',
+          });
+        } else {
+          // Handle other errors
+          return toast({
+            variant: 'destructive',
+            title: 'Sign up failed',
+            description: newUser.message || 'Please try again',
+          });
+        }
+      }
+
       if (!newUser) {
         return toast({
           variant: 'destructive',
           title: 'Sign up failed. Please try again',
         });
       }
+
       const session = await signInAccount({
         email: values.email,
         password: values.password,
@@ -68,15 +91,36 @@ const SignupForm = () => {
       if (isLoggedIn) {
         form.reset();
 
-        navigate('/');
+        // Force navigation to homepage
+        window.location.href = '/';
       } else {
-        return toast({
-          variant: 'destructive',
-          title: 'Sign up failed. Please try again',
-        });
+        // Check if there might be an existing session
+        if (
+          localStorage.getItem('cookieFallback') &&
+          localStorage.getItem('cookieFallback') !== '[]'
+        ) {
+          toast({
+            title: 'Account created successfully',
+            description:
+              'You may be logged in on another session. Please sign out from all sessions and try again.',
+          });
+
+          // Still try to navigate
+          window.location.href = '/';
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Sign up failed. Please try again',
+          });
+        }
       }
     } catch (error) {
       console.log({ error });
+      toast({
+        variant: 'destructive',
+        title: 'An error occurred during sign up',
+        description: 'Please try again later',
+      });
     }
   }
 
@@ -100,6 +144,22 @@ const SignupForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col gap-5 w-full mt-4"
         >
+          <FormField
+            control={form.control}
+            name="file"
+            render={({ field }) => (
+              <FormItem className="flex flex-col items-center gap-4">
+                <FormControl>
+                  <ProfileUploader
+                    fieldChange={field.onChange}
+                    mediaUrl="/assets/icons/profile-placeholder.svg"
+                    label="Upload profile photo"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="name"

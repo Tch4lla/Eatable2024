@@ -5,6 +5,17 @@ import { uploadToCloudinary, getOptimizedImageUrl, deleteFromCloudinary } from "
 
 export async function createUserAccount(user: INewUser) {
 	try {
+		// Check if a user with this email already exists
+		const existingUsers = await databases.listDocuments(
+			appwriteConfig.databaseId,
+			appwriteConfig.userCollectionId,
+			[Query.equal('email', user.email)]
+		);
+
+		if (existingUsers && existingUsers.documents.length > 0) {
+			throw new Error("A user with this email already exists");
+		}
+
 		const newAccount = await account.create(
 			ID.unique(),
 			user.email,
@@ -13,14 +24,25 @@ export async function createUserAccount(user: INewUser) {
 		)
 		if (!newAccount) throw Error;
 
-		const avatarUrl = avatars.getInitials(user.name)
+		let imageUrl = avatars.getInitials(user.name);
+		let imageId = "";
+
+		// If user uploaded a profile picture, upload it to Cloudinary
+		if (user.file && user.file.length > 0) {
+			const uploadedFile = await uploadFile(user.file[0]);
+			if (uploadedFile) {
+				imageUrl = uploadedFile.url;
+				imageId = uploadedFile.$id;
+			}
+		}
 
 		const newUser = await saveUserToDB({
 			accountId: newAccount.$id,
 			name: newAccount.name,
 			email: newAccount.email,
 			username: user.username,
-			imageUrl: avatarUrl,
+			imageUrl: imageUrl,
+			imageId: imageId,
 		})
 		return newUser
 
@@ -35,6 +57,7 @@ export async function saveUserToDB(user: {
 	email: string;
 	name: string;
 	imageUrl: URL | string;
+	imageId?: string;
 	username?: string
 }) {
 	try {
