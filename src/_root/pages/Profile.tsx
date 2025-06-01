@@ -8,11 +8,15 @@ import {
 } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-import { LikedPosts } from '@/_root/pages';
 import { useUserContext } from '@/context/AuthContext';
 import { useGetUserById } from '@/lib/react-query/queriesAndMutations';
 import Loader from '@/components/shared/Loader';
+import { useState, useEffect } from 'react';
+
+// Import components directly to avoid lazy loading overhead on profile page
 import GridPostList from '@/components/shared/GridPostList';
+import LikedPosts from '@/_root/pages/LikedPosts';
+
 interface StabBlockProps {
   value: string | number;
   label: string;
@@ -29,10 +33,31 @@ const Profile = () => {
   const { id } = useParams();
   const { user } = useUserContext();
   const { pathname } = useLocation();
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [, setActiveTab] = useState<'posts' | 'liked'>('posts');
 
-  const { data: currentUser } = useGetUserById(id || '');
+  // Optimize data fetching with proper caching
+  const { data: currentUser, isLoading } = useGetUserById(id || '');
 
-  if (!currentUser)
+  // Set active tab based on URL
+  useEffect(() => {
+    if (pathname.includes('/liked-posts')) {
+      setActiveTab('liked');
+    } else {
+      setActiveTab('posts');
+    }
+  }, [pathname]);
+
+  // Optimize profile image URL
+  const profileImageUrl =
+    currentUser?.imageUrl && currentUser.imageUrl.includes('cloudinary.com')
+      ? currentUser.imageUrl.replace(
+          '/upload/',
+          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
+        )
+      : currentUser?.imageUrl || '/assets/icons/profile-placeholder.svg';
+
+  if (isLoading || !currentUser)
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -43,20 +68,24 @@ const Profile = () => {
     <div className="profile-container">
       <div className="profile-inner_container">
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
-          <img
-            src={
-              currentUser.imageUrl &&
-              currentUser.imageUrl.includes('cloudinary.com')
-                ? currentUser.imageUrl.replace(
-                    '/upload/',
-                    '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
-                  )
-                : currentUser.imageUrl ||
-                  '/assets/icons/profile-placeholder.svg'
-            }
-            alt="profile"
-            className="w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover"
-          />
+          <div className="profile-image-container relative">
+            {!isImageLoaded && (
+              <div className="profile-image-placeholder">
+                <div className="loader-pulse"></div>
+              </div>
+            )}
+            <img
+              src={profileImageUrl}
+              alt="profile"
+              className={`w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover ${
+                isImageLoaded ? 'visible' : 'hidden'
+              }`}
+              loading="lazy"
+              width={144}
+              height={144}
+              onLoad={() => setIsImageLoaded(true)}
+            />
+          </div>
           <div className="flex flex-col flex-1 justify-between md:mt-2">
             <div className="flex flex-col w-full">
               <h1 className="text-center xl:text-left h3-bold md:h1-semibold w-full">
@@ -125,6 +154,7 @@ const Profile = () => {
             className={`profile-tab rounded-l-lg ${
               pathname === `/profile/${id}` && 'active-tab'
             }`}
+            onClick={() => setActiveTab('posts')}
           >
             <img
               src={'/assets/icons/posts.svg'}
@@ -139,6 +169,7 @@ const Profile = () => {
             className={`profile-tab rounded-r-lg ${
               pathname === `/profile/${id}/liked-posts` && 'active-tab'
             }`}
+            onClick={() => setActiveTab('liked')}
           >
             <img
               src={'/assets/icons/like.svg'}

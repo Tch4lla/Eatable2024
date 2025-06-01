@@ -7,8 +7,16 @@ import { cloudinaryConfig, buildCloudinaryUrl } from './config';
  */
 export async function uploadToCloudinary(file: File) {
     try {
+        // Check file size before upload - resize large images client-side
+        const shouldResizeImage = file.size > 1024 * 1024; // 1MB threshold
+        let fileToUpload = file;
+
+        if (shouldResizeImage && file.type.startsWith('image/')) {
+            fileToUpload = await resizeImageBeforeUpload(file);
+        }
+
         // Convert file to base64 string for upload
-        const base64Data = await fileToBase64(file);
+        const base64Data = await fileToBase64(fileToUpload);
 
         if (!base64Data) throw new Error('Failed to convert file to base64');
 
@@ -21,14 +29,23 @@ export async function uploadToCloudinary(file: File) {
         formData.append('quality', 'auto');
         formData.append('fetch_format', 'auto');
 
-        // Upload to Cloudinary via fetch API
+        // Enable eager transformations to pre-generate optimized versions
+        formData.append('eager', 'q_auto,f_auto,fl_progressive');
+
+        // Upload to Cloudinary via fetch API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
             {
                 method: 'POST',
                 body: formData,
+                signal: controller.signal
             }
         );
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error('Failed to upload image to Cloudinary');
@@ -44,6 +61,79 @@ export async function uploadToCloudinary(file: File) {
         console.error('Error uploading to Cloudinary:', error);
         throw error;
     }
+}
+
+/**
+ * Resizes an image before upload to reduce file size
+ * @param file The image file to resize
+ * @returns A Promise that resolves to the resized file
+ */
+async function resizeImageBeforeUpload(file: File): Promise<File> {
+    return new Promise((resolve) => {
+        try {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+
+            img.onload = () => {
+                // Release object URL
+                URL.revokeObjectURL(img.src);
+
+                // Calculate new dimensions (max 1200px width/height)
+                const MAX_SIZE = 1200;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height && width > MAX_SIZE) {
+                    height = Math.round(height * (MAX_SIZE / width));
+                    width = MAX_SIZE;
+                } else if (height > MAX_SIZE) {
+                    width = Math.round(width * (MAX_SIZE / height));
+                    height = MAX_SIZE;
+                }
+
+                // Create canvas and resize
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    resolve(file); // Fall back to original if canvas not supported
+                    return;
+                }
+
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to blob with reduced quality
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+
+                        // Create new file from blob
+                        const resizedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+
+                        resolve(resizedFile);
+                    },
+                    'image/jpeg',
+                    0.85 // 85% quality
+                );
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(img.src);
+                resolve(file); // Fall back to original on error
+            };
+        } catch (error) {
+            console.error('Error resizing image:', error);
+            resolve(file); // Fall back to original on error
+        }
+    });
 }
 
 /**
@@ -177,10 +267,13 @@ export async function deleteFromCloudinary(publicId: string) {
  * @returns A Promise that resolves to the base64 string
  */
 function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
+        reader.onerror = () => {
+            console.error('Error reading file as base64');
+            resolve(''); // Return empty string on error
+        };
     });
 }

@@ -203,10 +203,11 @@ export async function deleteFile(fileId: string) {
 }
 
 export async function getRecentPosts() {
+	// Reduce initial load to 10 posts instead of 20
 	const posts = await databases.listDocuments(
 		appwriteConfig.databaseId,
 		appwriteConfig.postCollectionId,
-		[Query.orderDesc('$createdAt'), Query.limit(20)]
+		[Query.orderDesc('$createdAt'), Query.limit(10)]
 	)
 	if (!posts) throw Error
 
@@ -356,7 +357,8 @@ export async function deletePost(postId: string, imageId: string) {
 
 
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
-	const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(20)]
+	// Reduce initial load to 10 posts instead of 20
+	const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
 
 	if (pageParam) {
 		queries.push(Query.cursorAfter(pageParam.toString()))
@@ -378,12 +380,12 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
 }
 
 export async function searchPosts(searchTerm: string) {
-
 	try {
+		// Limit search results to 10 posts for faster loading
 		const posts = await databases.listDocuments(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
-			[Query.search('caption', searchTerm)]
+			[Query.search('caption', searchTerm), Query.limit(10)]
 		)
 
 		if (!posts) throw Error
@@ -474,10 +476,11 @@ export async function getUserPosts(userId?: string) {
 	if (!userId) return;
 
 	try {
+		// Limit initial load to 10 posts for faster loading
 		const post = await databases.listDocuments(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
-			[Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+			[Query.equal("creator", userId), Query.orderDesc("$createdAt"), Query.limit(10)]
 		);
 
 		if (!post) throw Error;

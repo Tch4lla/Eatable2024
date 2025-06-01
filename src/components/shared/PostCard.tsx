@@ -3,6 +3,7 @@ import { formatDateString } from '@/lib/utils';
 import { Models } from 'appwrite';
 import { Link } from 'react-router-dom';
 import PostStats from './PostStats';
+import { useState } from 'react';
 
 type PostCardProps = {
   post: Models.Document;
@@ -10,7 +11,28 @@ type PostCardProps = {
 
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
-  if (!post.creator) return;
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  if (!post.creator) return null;
+
+  // Optimize profile image URL
+  const profileImageUrl =
+    post?.creator?.imageUrl &&
+    post?.creator?.imageUrl.includes('cloudinary.com')
+      ? post.creator.imageUrl.replace(
+          '/upload/',
+          '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
+        )
+      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
+
+  // Optimize post image URL with responsive sizing
+  const postImageUrl =
+    post.imageUrl && post.imageUrl.includes('cloudinary.com')
+      ? post.imageUrl.replace(
+          '/upload/',
+          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
+        )
+      : post.imageUrl || '/assets/icons/profile-placeholder.svg';
 
   return (
     <div className="post-card">
@@ -18,18 +40,12 @@ const PostCard = ({ post }: PostCardProps) => {
         <div className="flex items-center gap-3">
           <Link to={`/profile/${post.creator.$id}`}>
             <img
-              src={
-                post?.creator?.imageUrl &&
-                post?.creator?.imageUrl.includes('cloudinary.com')
-                  ? post.creator.imageUrl.replace(
-                      '/upload/',
-                      '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
-                    )
-                  : post?.creator?.imageUrl ||
-                    '/assets/icons/profile-placeholder.svg'
-              }
+              src={profileImageUrl}
               alt="creator"
               className="rounded-full w-12 h-12 object-cover"
+              loading="lazy"
+              width="48"
+              height="48"
             />
           </Link>
           <div className="flex flex-col">
@@ -73,11 +89,24 @@ const PostCard = ({ post }: PostCardProps) => {
             ))}
           </ul>
         </div>
-        <img
-          src={post.imageUrl || '/assets/icons/profile-placeholder.svg'}
-          alt="post-image"
-          className="post-card_img"
-        />
+        <div
+          className={`post-card_img-container ${
+            isImageLoaded ? 'loaded' : 'loading'
+          }`}
+        >
+          {!isImageLoaded && (
+            <div className="post-card_img-placeholder">
+              <div className="loader-pulse"></div>
+            </div>
+          )}
+          <img
+            src={postImageUrl}
+            alt="post-image"
+            className={`post-card_img ${isImageLoaded ? 'visible' : 'hidden'}`}
+            loading="lazy"
+            onLoad={() => setIsImageLoaded(true)}
+          />
+        </div>
       </Link>
       <PostStats
         post={post}

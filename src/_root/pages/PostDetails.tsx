@@ -1,4 +1,3 @@
-import GridPostList from '@/components/shared/GridPostList';
 import Loader from '@/components/shared/Loader';
 import PostStats from '@/components/shared/PostStats';
 import { Button } from '@/components/ui/button';
@@ -8,24 +7,82 @@ import { useGetUserPosts } from '@/lib/react-query/queriesAndMutations';
 import { useDeletePost } from '@/lib/react-query/queriesAndMutations';
 import { multiFormatDateString } from '@/lib/utils';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, lazy, Suspense } from 'react';
+
+// Lazy load the GridPostList component for related posts
+const LazyGridPostList = lazy(() => import('@/components/shared/GridPostList'));
 
 const PostDetails = () => {
   const { id } = useParams();
   const { data: post, isPending } = useGetPostById(id!);
   const { user } = useUserContext();
-  const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
-    post?.creator.$id
-  );
-  const { mutate: deletePost } = useDeletePost();
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [showRelatedPosts, setShowRelatedPosts] = useState(false);
   const navigate = useNavigate();
+
+  // Only fetch user posts when post data is available and user scrolls down
+  const { data: userPosts, isPending: isUserPostLoading } = useGetUserPosts(
+    post?.creator.$id && showRelatedPosts ? post.creator.$id : undefined
+  );
+
+  const { mutate: deletePost } = useDeletePost();
+
+  // Optimize post image URL with responsive sizing
+  const postImageUrl =
+    post?.imageUrl && post.imageUrl.includes('cloudinary.com')
+      ? post.imageUrl.replace(
+          '/upload/',
+          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
+        )
+      : post?.imageUrl;
+
+  // Optimize profile image URL
+  const profileImageUrl =
+    post?.creator?.imageUrl &&
+    post?.creator?.imageUrl.includes('cloudinary.com')
+      ? post?.creator?.imageUrl.replace(
+          '/upload/',
+          '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
+        )
+      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
 
   const handleDeletePost = () => {
     deletePost({ postId: id!, imageId: post?.imageId });
     navigate(-1);
   };
+
+  // Filter related posts to exclude current post
   const relatedPosts = userPosts?.documents.filter(
     (userPost) => userPost.$id !== id
   );
+
+  // Set up intersection observer to load related posts when user scrolls down
+  useEffect(() => {
+    if (!showRelatedPosts) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setShowRelatedPosts(true);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.1 }
+      );
+
+      const relatedPostsSection = document.getElementById(
+        'related-posts-section'
+      );
+      if (relatedPostsSection) {
+        observer.observe(relatedPostsSection);
+      }
+
+      return () => {
+        if (relatedPostsSection) {
+          observer.unobserve(relatedPostsSection);
+        }
+      };
+    }
+  }, [showRelatedPosts, post]);
 
   return (
     <div className="post_details-container">
@@ -33,11 +90,22 @@ const PostDetails = () => {
         <Loader />
       ) : (
         <div className="post_details-card">
-          <img
-            src={post?.imageUrl}
-            alt="post"
-            className="post_details-img"
-          />
+          <div className="post_details-img-container relative">
+            {!isImageLoaded && (
+              <div className="post_details-img-placeholder">
+                <div className="loader-pulse"></div>
+              </div>
+            )}
+            <img
+              src={postImageUrl}
+              alt="post"
+              className={`post_details-img ${
+                isImageLoaded ? 'visible' : 'hidden'
+              }`}
+              loading="lazy"
+              onLoad={() => setIsImageLoaded(true)}
+            />
+          </div>
           <div className="post_details-info">
             <div className="flex-between w-full">
               <Link
@@ -45,12 +113,12 @@ const PostDetails = () => {
                 className="flex items-center gap-3"
               >
                 <img
-                  src={
-                    post?.creator?.imageUrl ||
-                    '/assets/icons/profile-placeholder.svg'
-                  }
+                  src={profileImageUrl}
                   alt="creator"
                   className="rounded-full w-8 h-8 lg:w-12 lg:h-12"
+                  loading="lazy"
+                  width={48}
+                  height={48}
                 />
 
                 <div className="flex flex-col">
@@ -121,16 +189,28 @@ const PostDetails = () => {
         </div>
       )}
 
-      <div className="w-full max-w-5xl">
+      <div
+        id="related-posts-section"
+        className="w-full max-w-5xl"
+      >
         <hr className="border w-full border-dark-4/80" />
 
         <h3 className="body-bold md:h3-bold w-full my-10">
           More Related Posts
         </h3>
-        {isUserPostLoading || !relatedPosts ? (
-          <Loader />
+
+        {showRelatedPosts ? (
+          isUserPostLoading || !relatedPosts ? (
+            <Loader />
+          ) : (
+            <Suspense fallback={<Loader />}>
+              <LazyGridPostList posts={relatedPosts} />
+            </Suspense>
+          )
         ) : (
-          <GridPostList posts={relatedPosts} />
+          <div className="flex-center h-40">
+            <p className="text-light-3">Scroll down to see related posts</p>
+          </div>
         )}
       </div>
     </div>

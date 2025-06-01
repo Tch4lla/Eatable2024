@@ -178,8 +178,25 @@
     @apply bg-dark-2 w-full max-w-5xl rounded-[30px] flex-col flex xl:flex-row border border-dark-4 xl:rounded-l-[24px];
   }
 
+  /* Post Details Image with Loading State */
+  .post_details-img-container {
+    @apply h-80 lg:h-[480px] xl:w-[48%] rounded-t-[30px] xl:rounded-l-[24px] xl:rounded-tr-none p-5 bg-dark-1;
+  }
+
+  .post_details-img-placeholder {
+    @apply absolute inset-0 flex items-center justify-center;
+  }
+
   .post_details-img {
-    @apply h-80 lg:h-[480px] xl:w-[48%] rounded-t-[30px] xl:rounded-l-[24px] xl:rounded-tr-none object-cover p-5 bg-dark-1;
+    @apply h-full w-full rounded-[24px] object-cover transition-opacity duration-300;
+  }
+
+  .post_details-img.visible {
+    @apply opacity-100;
+  }
+
+  .post_details-img.hidden {
+    @apply opacity-0;
   }
 
   .post_details-info {
@@ -197,6 +214,19 @@
 
   .profile-inner_container {
     @apply flex items-center md:mb-8 xl:items-start gap-8 flex-col xl:flex-row relative max-w-5xl w-full;
+  }
+
+  /* Profile Image with Loading State */
+  .profile-image-container {
+    @apply relative w-28 h-28 lg:h-36 lg:w-36 rounded-full overflow-hidden;
+  }
+
+  .profile-image-placeholder {
+    @apply absolute inset-0 flex items-center justify-center bg-dark-4 rounded-full;
+  }
+
+  .light .profile-image-placeholder {
+    @apply bg-light-bg-3;
   }
 
   .profile-tab {
@@ -322,8 +352,46 @@
     @apply bg-light-bg-2 border-light-bg-4;
   }
 
+  /* Post Card Image with Loading State */
+  .post-card_img-container {
+    @apply relative h-64 xs:h-[400px] lg:h-[450px] w-full rounded-[24px] mb-5 overflow-hidden;
+  }
+
+  .post-card_img-placeholder {
+    @apply absolute inset-0 flex items-center justify-center bg-dark-4;
+  }
+
+  .light .post-card_img-placeholder {
+    @apply bg-light-bg-3;
+  }
+
+  .loader-pulse {
+    @apply w-12 h-12 rounded-full bg-primary-500/30;
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
   .post-card_img {
-    @apply h-64 xs:h-[400px] lg:h-[450px] w-full rounded-[24px] object-cover mb-5;
+    @apply h-64 xs:h-[400px] lg:h-[450px] w-full rounded-[24px] object-cover transition-opacity duration-300;
+  }
+
+  .post-card_img.visible {
+    @apply opacity-100;
+  }
+
+  .post-card_img.hidden {
+    @apply opacity-0;
   }
 
   /* Topbar */
