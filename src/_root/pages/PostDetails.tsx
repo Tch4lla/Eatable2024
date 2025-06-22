@@ -8,6 +8,12 @@ import { useDeletePost } from '@/lib/react-query/queriesAndMutations';
 import { multiFormatDateString } from '@/lib/utils';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
+import {
+  getPostImageUrl,
+  getProfileImageUrl,
+  generateImageSrcSet,
+  extractCloudinaryPublicId,
+} from '@/lib/cloudinary/config';
 
 // Lazy load the GridPostList component for related posts
 const LazyGridPostList = lazy(() => import('@/components/shared/GridPostList'));
@@ -18,6 +24,9 @@ const PostDetails = () => {
   const { user } = useUserContext();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [showRelatedPosts, setShowRelatedPosts] = useState(false);
+  const [profileImageSrc, setProfileImageSrc] = useState('');
+  const [postImageSrc, setPostImageSrc] = useState('');
+  const [imageSrcSet, setImageSrcSet] = useState('');
   const navigate = useNavigate();
 
   // Only fetch user posts when post data is available and user scrolls down
@@ -27,24 +36,32 @@ const PostDetails = () => {
 
   const { mutate: deletePost } = useDeletePost();
 
-  // Optimize post image URL with responsive sizing
-  const postImageUrl =
-    post?.imageUrl && post.imageUrl.includes('cloudinary.com')
-      ? post.imageUrl.replace(
-          '/upload/',
-          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
-        )
-      : post?.imageUrl;
+  // Set up image sources when post data is available
+  useEffect(() => {
+    if (!post) return;
 
-  // Optimize profile image URL
-  const profileImageUrl =
-    post?.creator?.imageUrl &&
-    post?.creator?.imageUrl.includes('cloudinary.com')
-      ? post?.creator?.imageUrl.replace(
-          '/upload/',
-          '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
-        )
-      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
+    // Set profile image
+    if (
+      post?.creator?.imageUrl &&
+      post.creator.imageUrl.includes('cloudinary.com')
+    ) {
+      const profileId = extractCloudinaryPublicId(post.creator.imageUrl);
+      setProfileImageSrc(getProfileImageUrl(profileId, 100) || '');
+    } else {
+      setProfileImageSrc(
+        post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'
+      );
+    }
+
+    // Set post image and srcset
+    if (post.imageUrl && post.imageUrl.includes('cloudinary.com')) {
+      const postId = extractCloudinaryPublicId(post.imageUrl);
+      setPostImageSrc(getPostImageUrl(postId, 1200) || '');
+      setImageSrcSet(generateImageSrcSet(postId, [600, 900, 1200, 1600]));
+    } else {
+      setPostImageSrc(post.imageUrl || '/assets/icons/profile-placeholder.svg');
+    }
+  }, [post]);
 
   const handleDeletePost = () => {
     deletePost({ postId: id!, imageId: post?.imageId });
@@ -97,13 +114,15 @@ const PostDetails = () => {
               </div>
             )}
             <img
-              src={postImageUrl}
+              src={postImageSrc}
               alt="post"
               className={`post_details-img ${
                 isImageLoaded ? 'visible' : 'hidden'
               }`}
               loading="lazy"
               onLoad={() => setIsImageLoaded(true)}
+              srcSet={imageSrcSet}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 1200px"
             />
           </div>
           <div className="post_details-info">
@@ -113,7 +132,7 @@ const PostDetails = () => {
                 className="flex items-center gap-3"
               >
                 <img
-                  src={profileImageUrl}
+                  src={profileImageSrc}
                   alt="creator"
                   className="rounded-full w-8 h-8 lg:w-12 lg:h-12"
                   loading="lazy"

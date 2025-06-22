@@ -3,7 +3,13 @@ import { formatDateString } from '@/lib/utils';
 import { Models } from 'appwrite';
 import { Link } from 'react-router-dom';
 import PostStats from './PostStats';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {
+  getPostImageUrl,
+  getProfileImageUrl,
+  generateImageSrcSet,
+  extractCloudinaryPublicId,
+} from '@/lib/cloudinary/config';
 
 type PostCardProps = {
   post: Models.Document;
@@ -12,27 +18,35 @@ type PostCardProps = {
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [profileImageSrc, setProfileImageSrc] = useState('');
+  const [postImageSrc, setPostImageSrc] = useState('');
+  const [imageSrcSet, setImageSrcSet] = useState('');
 
   if (!post.creator) return null;
 
-  // Optimize profile image URL
-  const profileImageUrl =
-    post?.creator?.imageUrl &&
-    post?.creator?.imageUrl.includes('cloudinary.com')
-      ? post.creator.imageUrl.replace(
-          '/upload/',
-          '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
-        )
-      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
+  useEffect(() => {
+    // Set profile image
+    if (
+      post?.creator?.imageUrl &&
+      post.creator.imageUrl.includes('cloudinary.com')
+    ) {
+      const profileId = extractCloudinaryPublicId(post.creator.imageUrl);
+      setProfileImageSrc(getProfileImageUrl(profileId, 100) || '');
+    } else {
+      setProfileImageSrc(
+        post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'
+      );
+    }
 
-  // Optimize post image URL with responsive sizing
-  const postImageUrl =
-    post.imageUrl && post.imageUrl.includes('cloudinary.com')
-      ? post.imageUrl.replace(
-          '/upload/',
-          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
-        )
-      : post.imageUrl || '/assets/icons/profile-placeholder.svg';
+    // Set post image and srcset
+    if (post.imageUrl && post.imageUrl.includes('cloudinary.com')) {
+      const postId = extractCloudinaryPublicId(post.imageUrl);
+      setPostImageSrc(getPostImageUrl(postId, 800) || '');
+      setImageSrcSet(generateImageSrcSet(postId));
+    } else {
+      setPostImageSrc(post.imageUrl || '/assets/icons/profile-placeholder.svg');
+    }
+  }, [post.creator?.imageUrl, post.imageUrl]);
 
   return (
     <div className="post-card">
@@ -40,7 +54,7 @@ const PostCard = ({ post }: PostCardProps) => {
         <div className="flex items-center gap-3">
           <Link to={`/profile/${post.creator.$id}`}>
             <img
-              src={profileImageUrl}
+              src={profileImageSrc}
               alt="creator"
               className="rounded-full w-12 h-12 object-cover"
               loading="lazy"
@@ -100,11 +114,13 @@ const PostCard = ({ post }: PostCardProps) => {
             </div>
           )}
           <img
-            src={postImageUrl}
+            src={postImageSrc}
             alt="post-image"
             className={`post-card_img ${isImageLoaded ? 'visible' : 'hidden'}`}
             loading="lazy"
             onLoad={() => setIsImageLoaded(true)}
+            srcSet={imageSrcSet}
+            sizes="(max-width: 768px) 100vw, 800px"
           />
         </div>
       </Link>

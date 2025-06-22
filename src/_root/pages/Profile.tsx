@@ -12,6 +12,10 @@ import { useUserContext } from '@/context/AuthContext';
 import { useGetUserById } from '@/lib/react-query/queriesAndMutations';
 import Loader from '@/components/shared/Loader';
 import { useState, useEffect } from 'react';
+import {
+  getProfileImageUrl,
+  extractCloudinaryPublicId,
+} from '@/lib/cloudinary/config';
 
 // Import components directly to avoid lazy loading overhead on profile page
 import GridPostList from '@/components/shared/GridPostList';
@@ -35,6 +39,7 @@ const Profile = () => {
   const { pathname } = useLocation();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [, setActiveTab] = useState<'posts' | 'liked'>('posts');
+  const [profileImageSrc, setProfileImageSrc] = useState('');
 
   // Optimize data fetching with proper caching
   const { data: currentUser, isLoading } = useGetUserById(id || '');
@@ -48,14 +53,24 @@ const Profile = () => {
     }
   }, [pathname]);
 
-  // Optimize profile image URL
-  const profileImageUrl =
-    currentUser?.imageUrl && currentUser.imageUrl.includes('cloudinary.com')
-      ? currentUser.imageUrl.replace(
-          '/upload/',
-          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
-        )
-      : currentUser?.imageUrl || '/assets/icons/profile-placeholder.svg';
+  // Set profile image when user data is available
+  useEffect(() => {
+    if (!currentUser) return;
+
+    if (
+      currentUser.imageUrl &&
+      currentUser.imageUrl.includes('cloudinary.com')
+    ) {
+      const profileId = extractCloudinaryPublicId(currentUser.imageUrl);
+      // Use a larger size for profile page
+      const profileUrl = getProfileImageUrl(profileId, 400);
+      setProfileImageSrc(profileUrl || currentUser.imageUrl);
+    } else {
+      setProfileImageSrc(
+        currentUser.imageUrl || '/assets/icons/profile-placeholder.svg'
+      );
+    }
+  }, [currentUser]);
 
   if (isLoading || !currentUser)
     return (
@@ -75,7 +90,7 @@ const Profile = () => {
               </div>
             )}
             <img
-              src={profileImageUrl}
+              src={profileImageSrc}
               alt="profile"
               className={`w-28 h-28 lg:h-36 lg:w-36 rounded-full object-cover ${
                 isImageLoaded ? 'visible' : 'hidden'
