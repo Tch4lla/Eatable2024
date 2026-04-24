@@ -39,10 +39,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const navigate = useNavigate();
 
-  // Save user to cache
+  // Save user to cache — only display-safe fields (no id or email)
   const saveUserToCache = useCallback((userData: IUser) => {
     const cacheData = {
-      user: userData,
+      user: {
+        name: userData.name,
+        username: userData.username,
+        imageUrl: userData.imageUrl,
+        bio: userData.bio,
+      },
       timestamp: Date.now(),
     };
     localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cacheData));
@@ -72,16 +77,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAuthUser = async () => {
     setIsLoading(true);
     try {
-      // First try to get user from cache
+      // Pre-populate display fields from cache while API call runs
       const cachedUser = getUserFromCache();
       if (cachedUser) {
-        setUser(cachedUser);
+        setUser(prev => ({ ...prev, ...cachedUser }));
         setIsAuthenticated(true);
-        setIsLoading(false);
-        return true;
       }
 
-      // If no cache, fetch from API
+      // Always fetch full user from API — cache doesn't store id or email
       const currentAccount = await getCurrentUser();
       if (currentAccount) {
         const userData = {
@@ -98,14 +101,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(true);
         return true;
       } else {
-        // Handle case where user is not authenticated
         setUser(INITIAL_USER);
         setIsAuthenticated(false);
         return false;
       }
     } catch (error) {
       console.log('Error in checkAuthUser:', error);
-      // Reset user state on error
       setUser(INITIAL_USER);
       setIsAuthenticated(false);
       return false;
@@ -115,10 +116,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Check if user has authentication cookie
     const cookieFallback = localStorage.getItem('cookieFallback');
 
-    // Only redirect if we're on a protected route and there's no cookie
     if (
       (cookieFallback === '[]' || cookieFallback === null) &&
       window.location.pathname !== '/' &&
@@ -127,16 +126,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate('/');
     }
 
-    // Try to get user from cache first for immediate UI update
-    const cachedUser = getUserFromCache();
-    if (cachedUser) {
-      setUser(cachedUser);
-      setIsAuthenticated(true);
-    }
-
-    // Always check auth status in background, but don't force redirect
+    // checkAuthUser handles cache preview + full API call
     checkAuthUser();
-  }, [navigate, getUserFromCache]);
+  }, [navigate]);
   const value = {
     user,
     setUser,

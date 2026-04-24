@@ -1,9 +1,8 @@
 // Cloudinary configuration for browser environment
 export const cloudinaryConfig = {
     cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-    apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
-    apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
     uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+    // apiKey and apiSecret removed — server-only, use CLOUDINARY_API_KEY/SECRET in Appwrite function env vars
 };
 
 // Helper function to generate Cloudinary URLs with performance optimizations

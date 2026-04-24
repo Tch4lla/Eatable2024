@@ -1,5 +1,5 @@
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "../../types";
-import { ID, Query } from "appwrite";
+import { ID, Query, Permission, Role } from "appwrite";
 import { account, appwriteConfig, avatars, databases } from "./config";
 import { uploadToCloudinary, getOptimizedImageUrl, getProfileImageUrl, deleteFromCloudinary } from "../cloudinary/api";
 
@@ -70,6 +70,10 @@ export async function saveUserToDB(user: {
 			appwriteConfig.userCollectionId,
 			ID.unique(),
 			user,
+			[
+				Permission.read(Role.any()),
+				Permission.update(Role.user(user.accountId)),
+			]
 		)
 		return newUser
 	} catch (error) {
@@ -126,7 +130,13 @@ export async function signOutAccount() {
 }
 
 export async function createPost(post: INewPost) {
+	if (!post.userId) throw new Error("Invalid userId");
+	if (!post.caption || post.caption.length > 2200) throw new Error("Invalid caption");
+	if (!post.file || post.file.length === 0) throw new Error("Image required");
+
 	try {
+		const currentAccount = await account.get();
+
 		//upload image to Cloudinary
 		const uploadedFile = await uploadFile(post.file[0])
 		if (!uploadedFile) throw Error
@@ -143,7 +153,7 @@ export async function createPost(post: INewPost) {
 		//convert tags into an array
 		const tags = post.tags?.replace(/ /g, '').split(',') || []
 
-		//save post to database 
+		//save post to database
 		const newPost = await databases.createDocument(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
@@ -155,7 +165,12 @@ export async function createPost(post: INewPost) {
 				imageId: uploadedFile.$id, // This is the Cloudinary public_id
 				location: post.location,
 				tags: tags
-			}
+			},
+			[
+				Permission.read(Role.any()),
+				Permission.update(Role.user(currentAccount.$id)),
+				Permission.delete(Role.user(currentAccount.$id)),
+			]
 		)
 
 		if (!newPost) {
@@ -214,15 +229,22 @@ export async function getRecentPosts() {
 	return posts
 }
 
-export async function likePost(postId: string, likesArray: string[]) {
+export async function likePost(postId: string, userId: string, isLiking: boolean) {
 	try {
+		const post = await databases.getDocument(
+			appwriteConfig.databaseId,
+			appwriteConfig.postCollectionId,
+			postId
+		);
+		const currentLikes: string[] = (post.likes || []).map((u: any) => u.$id || u);
+		const updatedLikes = isLiking
+			? [...new Set([...currentLikes, userId])]
+			: currentLikes.filter((id: string) => id !== userId);
 		const updatedPost = await databases.updateDocument(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
 			postId,
-			{
-				likes: likesArray
-			}
+			{ likes: updatedLikes }
 		)
 		if (!updatedPost) throw Error
 		return updatedPost
@@ -233,6 +255,7 @@ export async function likePost(postId: string, likesArray: string[]) {
 
 export async function savePost(postId: string, userId: string) {
 	try {
+		const currentAccount = await account.get();
 		const updatedPost = await databases.createDocument(
 			appwriteConfig.databaseId,
 			appwriteConfig.savesCollectionId,
@@ -240,7 +263,11 @@ export async function savePost(postId: string, userId: string) {
 			{
 				user: userId,
 				post: postId
-			}
+			},
+			[
+				Permission.read(Role.user(currentAccount.$id)),
+				Permission.delete(Role.user(currentAccount.$id)),
+			]
 		)
 		if (!updatedPost) throw Error
 		return updatedPost
@@ -277,8 +304,20 @@ export async function getPostById(postId: string) {
 }
 
 export async function updatePost(post: IUpdatePost) {
+	if (!post.postId) throw new Error("Invalid postId");
+	if (post.caption && post.caption.length > 2200) throw new Error("Caption too long");
+
 	const hasFileToUpdate = post.file.length > 0
 	try {
+		const currentAccount = await account.get();
+		const existing = await databases.getDocument(
+			appwriteConfig.databaseId,
+			appwriteConfig.postCollectionId,
+			post.postId
+		);
+		if (existing.creator?.accountId !== currentAccount.$id) {
+			throw new Error("Unauthorized: you do not own this post");
+		}
 		let image = {
 			imageUrl: post.imageUrl,
 			imageId: post.imageId
@@ -339,6 +378,16 @@ export async function deletePost(postId: string, imageId: string) {
 	if (!postId || !imageId) return;
 
 	try {
+		const currentAccount = await account.get();
+		const post = await databases.getDocument(
+			appwriteConfig.databaseId,
+			appwriteConfig.postCollectionId,
+			postId
+		);
+		if (post.creator?.accountId !== currentAccount.$id) {
+			throw new Error("Unauthorized: you do not own this post");
+		}
+
 		const statusCode = await databases.deleteDocument(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
@@ -413,8 +462,20 @@ export async function getUserById(userId: string) {
 }
 
 export async function updateUser(user: IUpdateUser) {
+	if (!user.userId) throw new Error("Invalid userId");
+	if (!user.name) throw new Error("Name required");
+
 	const hasFileToUpdate = user.file.length > 0;
 	try {
+		const currentAccount = await account.get();
+		const userDoc = await databases.getDocument(
+			appwriteConfig.databaseId,
+			appwriteConfig.userCollectionId,
+			user.userId
+		);
+		if (userDoc.accountId !== currentAccount.$id) {
+			throw new Error("Unauthorized: you can only update your own profile");
+		}
 		let image = {
 			imageUrl: user.imageUrl,
 			imageId: user.imageId,
