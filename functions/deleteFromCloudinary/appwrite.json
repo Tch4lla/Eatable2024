@@ -1,16 +1,17 @@
 {
+  "$id": "69eb7a0c000bac90072b",
   "name": "deleteFromCloudinary",
-  "runtime": "node-18.0",
+  "runtime": "node-25",
   "path": "src/index.js",
-  "entrypoint": "deleteFromCloudinary",
+  "entrypoint": "src/index.js",
   "execute": ["any"],
   "events": [],
   "schedule": "",
   "timeout": 15,
   "enabled": true,
   "vars": {
-    "CLOUDINARY_CLOUD_NAME": "{{_env.VITE_CLOUDINARY_CLOUD_NAME}}",
-    "CLOUDINARY_API_KEY": "{{_env.VITE_CLOUDINARY_API_KEY}}",
-    "CLOUDINARY_API_SECRET": "{{_env.VITE_CLOUDINARY_API_SECRET}}"
+    "CLOUDINARY_CLOUD_NAME": "",
+    "CLOUDINARY_API_KEY": "",
+    "CLOUDINARY_API_SECRET": ""
   }
 }
