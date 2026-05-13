@@ -24,10 +24,6 @@ export async function createUserAccount(user: INewUser) {
 		)
 		if (!newAccount) throw Error;
 
-		// Create a session so the user is authenticated before saveUserToDB,
-		// which sets user-scoped document permissions requiring an active session.
-		await account.createEmailSession(user.email, user.password);
-
 		let imageUrl = avatars.getInitials(user.name).toString();
 		let imageId = "";
 
@@ -76,7 +72,6 @@ export async function saveUserToDB(user: {
 			user,
 			[
 				Permission.read(Role.any()),
-				Permission.update(Role.user(user.accountId)),
 			]
 		)
 		return newUser
