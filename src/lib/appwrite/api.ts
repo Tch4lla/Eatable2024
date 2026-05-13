@@ -26,7 +26,7 @@ export async function createUserAccount(user: INewUser) {
 
 		// Create a session so the user is authenticated before saveUserToDB,
 		// which sets user-scoped document permissions requiring an active session.
-		await account.createEmailPasswordSession(user.email, user.password);
+		await account.createEmailSession(user.email, user.password);
 
 		let imageUrl = avatars.getInitials(user.name).toString();
 		let imageId = "";
@@ -87,7 +87,7 @@ export async function saveUserToDB(user: {
 
 export async function signInAccount(user: { email: string, password: string }) {
 	try {
-		const session = await account.createEmailPasswordSession(user.email, user.password)
+		const session = await account.createEmailSession(user.email, user.password)
 		return session
 	} catch (error) {
 		console.log(error)
