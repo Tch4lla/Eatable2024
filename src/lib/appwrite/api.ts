@@ -64,6 +64,7 @@ export async function saveUserToDB(user: {
 	imageId?: string;
 	username?: string
 }) {
+	if (!user.accountId || !user.email || !user.name) throw new Error("Missing required user fields");
 	try {
 		const newUser = await databases.createDocument(
 			appwriteConfig.databaseId,
@@ -236,6 +237,10 @@ export async function getRecentPosts() {
 
 export async function likePost(postId: string, userId: string, isLiking: boolean) {
 	try {
+		const currentAccount = await account.get();
+		if (currentAccount.$id !== userId) {
+			throw new Error("Unauthorized: cannot like as another user");
+		}
 		const post = await databases.getDocument(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
@@ -282,6 +287,7 @@ export async function savePost(postId: string, userId: string) {
 }
 
 export async function deleteSavedPost(savedRecordId: string) {
+	if (!savedRecordId) return;
 	try {
 		const statusCode = await databases.deleteDocument(
 			appwriteConfig.databaseId,
@@ -296,6 +302,7 @@ export async function deleteSavedPost(savedRecordId: string) {
 }
 
 export async function getPostById(postId: string) {
+	if (!postId) return;
 	try {
 		const post = await databases.getDocument(
 			appwriteConfig.databaseId,
@@ -434,12 +441,14 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
 }
 
 export async function searchPosts(searchTerm: string) {
+	if (!searchTerm || searchTerm.trim().length === 0) return;
+	const sanitized = searchTerm.trim().slice(0, 100);
 	try {
 		// Limit search results to 10 posts for faster loading
 		const posts = await databases.listDocuments(
 			appwriteConfig.databaseId,
 			appwriteConfig.postCollectionId,
-			[Query.search('caption', searchTerm), Query.limit(10)]
+			[Query.search('caption', sanitized), Query.limit(10)]
 		)
 
 		if (!posts) throw Error
@@ -451,6 +460,7 @@ export async function searchPosts(searchTerm: string) {
 }
 
 export async function getUserById(userId: string) {
+	if (!userId) return;
 	try {
 		const user = await databases.getDocument(
 			appwriteConfig.databaseId,
