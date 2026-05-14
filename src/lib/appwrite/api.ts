@@ -82,6 +82,12 @@ export async function saveUserToDB(user: {
 
 export async function signInAccount(user: { email: string, password: string }) {
 	try {
+		// Delete any stale session first; Appwrite rejects createEmailSession if one is active
+		try {
+			await account.deleteSession("current");
+		} catch {
+			// No active session — this is the normal path for first-time logins
+		}
 		const session = await account.createEmailSession(user.email, user.password)
 		return session
 	} catch (error) {
