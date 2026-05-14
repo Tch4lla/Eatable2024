@@ -542,6 +542,11 @@ export async function updateUser(user: IUpdateUser) {
 			throw Error;
 		}
 
+		// If email changed, invalidate all sessions to force re-login
+		if (user.email && user.email !== userDoc.email) {
+			await account.deleteSessions();
+		}
+
 		return updatedUser;
 	} catch (error) {
 		console.log(error);
@@ -564,6 +569,66 @@ export async function getUserPosts(userId?: string) {
 		return post;
 	} catch (error) {
 		console.log(error);
+	}
+}
+
+export async function deleteAccount(userId: string) {
+	if (!userId) throw new Error("Invalid userId");
+	try {
+		const currentAccount = await account.get();
+		const userDoc = await databases.getDocument(
+			appwriteConfig.databaseId,
+			appwriteConfig.userCollectionId,
+			userId
+		);
+		if (userDoc.accountId !== currentAccount.$id) {
+			throw new Error("Unauthorized: you can only delete your own account");
+		}
+
+		// Delete all user posts and their Cloudinary images (paginated)
+		let hasMorePosts = true;
+		while (hasMorePosts) {
+			const posts = await databases.listDocuments(
+				appwriteConfig.databaseId,
+				appwriteConfig.postCollectionId,
+				[Query.equal("creator", userId), Query.limit(100)]
+			);
+			for (const post of posts.documents) {
+				await databases.deleteDocument(appwriteConfig.databaseId, appwriteConfig.postCollectionId, post.$id);
+				if (post.imageId) await deleteFile(post.imageId);
+			}
+			hasMorePosts = posts.documents.length === 100;
+		}
+
+		// Delete all user saves (paginated)
+		let hasMoreSaves = true;
+		while (hasMoreSaves) {
+			const saves = await databases.listDocuments(
+				appwriteConfig.databaseId,
+				appwriteConfig.savesCollectionId,
+				[Query.equal("user", userId), Query.limit(100)]
+			);
+			for (const save of saves.documents) {
+				await databases.deleteDocument(appwriteConfig.databaseId, appwriteConfig.savesCollectionId, save.$id);
+			}
+			hasMoreSaves = saves.documents.length === 100;
+		}
+
+		// Delete profile image from Cloudinary
+		if (userDoc.imageId) {
+			await deleteFile(userDoc.imageId);
+		}
+
+		// Delete user document from DB
+		await databases.deleteDocument(appwriteConfig.databaseId, appwriteConfig.userCollectionId, userId);
+
+		// Invalidate all sessions (auth account deletion requires server-side admin SDK)
+		await account.deleteSessions();
+
+		return { status: "ok" };
+	} catch (error) {
+		console.log(error);
+		throw error;
 	}
 }
 
