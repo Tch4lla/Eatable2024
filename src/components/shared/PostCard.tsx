@@ -102,7 +102,7 @@ const PostCard = ({ post }: PostCardProps) => {
           <img
             src={postImageUrl}
             alt="post-image"
-            className={`post-card_img ${isImageLoaded ? 'visible' : 'hidden'}`}
+            className={`post-card_img ${isImageLoaded ? 'visible' : 'img-loading'}`}
             loading="lazy"
             onLoad={() => setIsImageLoaded(true)}
             onError={() => setIsImageLoaded(true)}

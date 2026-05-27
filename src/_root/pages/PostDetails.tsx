@@ -100,7 +100,7 @@ const PostDetails = () => {
               src={postImageUrl}
               alt="post"
               className={`post_details-img ${
-                isImageLoaded ? 'visible' : 'hidden'
+                isImageLoaded ? 'visible' : 'img-loading'
               }`}
               loading="lazy"
               onLoad={() => setIsImageLoaded(true)}

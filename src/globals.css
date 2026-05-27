@@ -195,7 +195,7 @@
     @apply opacity-100;
   }
 
-  .post_details-img.hidden {
+  .post_details-img.img-loading {
     @apply opacity-0;
   }
 
@@ -390,7 +390,7 @@
     @apply opacity-100;
   }
 
-  .post-card_img.hidden {
+  .post-card_img.img-loading {
     @apply opacity-0;
   }
 
