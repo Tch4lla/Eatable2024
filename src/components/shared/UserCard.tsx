@@ -18,12 +18,15 @@ const UserCard = ({ user }: UserCardProps) => {
           user.imageUrl && user.imageUrl.includes('cloudinary.com')
             ? user.imageUrl.replace(
                 '/upload/',
-                '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                '/upload/w_112,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
               )
             : user.imageUrl || '/assets/icons/profile-placeholder.svg'
         }
         alt="creator"
         className="rounded-full w-14 h-14 object-cover"
+        loading="lazy"
+        width="56"
+        height="56"
       />
 
       <div className="flex-center flex-col gap-1">

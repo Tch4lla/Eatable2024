@@ -12,6 +12,12 @@
       content="width=device-width, initial-scale=1.0"
     />
     <title>Eatable</title>
+    <!-- Preconnect to Cloudinary CDN so the first image request skips DNS+TLS -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <!-- Preload above-the-fold hero images on the landing page -->
+    <link rel="preload" as="image" href="/assets/images/cheers.jpg" media="(max-width: 1023px)" />
+    <link rel="preload" as="image" href="/assets/images/heroPhoto.JPG" media="(min-width: 1024px)" />
+    <link rel="preload" as="image" href="/assets/images/Eatable_logo.png" />
   </head>
   <body>
     <div id="root"></div>

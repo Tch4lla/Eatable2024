@@ -26,9 +26,17 @@ const GridPostList = ({
             className="grid-post_link"
           >
             <img
-              src={post.imageUrl}
+              src={
+                post.imageUrl && post.imageUrl.includes('cloudinary.com')
+                  ? post.imageUrl.replace(
+                      '/upload/',
+                      '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
+                    )
+                  : post.imageUrl
+              }
               alt="post"
               className="h-full w-full object-cover"
+              loading="lazy"
             />
           </Link>
           <div className="grid-post_user">
@@ -40,13 +48,16 @@ const GridPostList = ({
                     post.creator.imageUrl.includes('cloudinary.com')
                       ? post.creator.imageUrl.replace(
                           '/upload/',
-                          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
+                          '/upload/w_64,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
                         )
                       : post.creator.imageUrl ||
                         '/assets/icons/profile-placeholder.svg'
                   }
                   alt="creator"
                   className="h-8 w-8 rounded-full object-cover"
+                  loading="lazy"
+                  width="32"
+                  height="32"
                 />
                 <p className="line-clamp-1">{post.creator.name}</p>
               </div>

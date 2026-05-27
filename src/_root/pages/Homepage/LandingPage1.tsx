@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
@@ -54,18 +55,22 @@ const LandingPage = () => {
         </div>
         {/* New div for mobile responsiveness */}
         <div className="w-full lg:hidden">
+          {/* eslint-disable-next-line */}
           <img
             className="object-cover w-full h-96"
             src="/assets/images/cheers.jpg"
             alt="mobile-responsive-image"
+            {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
           />
         </div>
         {/* Hidden on mobile screens */}
         <div className="hidden lg:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-6/10">
+          {/* eslint-disable-next-line */}
           <img
             className="object-cover w-full h-96 sm:h-full md:h-full lg:h-full"
             src="/assets/images/heroPhoto.JPG"
             alt="hero-image"
+            {...({ fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
           />
         </div>
       </div>
