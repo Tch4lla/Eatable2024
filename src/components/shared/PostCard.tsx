@@ -30,7 +30,7 @@ const PostCard = ({ post }: PostCardProps) => {
     post.imageUrl && post.imageUrl.includes('cloudinary.com')
       ? post.imageUrl.replace(
           '/upload/',
-          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
+          '/upload/q_auto,f_auto,w_800,c_limit/'
         )
       : post.imageUrl || '/assets/icons/profile-placeholder.svg';
 
@@ -105,6 +105,7 @@ const PostCard = ({ post }: PostCardProps) => {
             className={`post-card_img ${isImageLoaded ? 'visible' : 'hidden'}`}
             loading="lazy"
             onLoad={() => setIsImageLoaded(true)}
+            onError={() => setIsImageLoaded(true)}
           />
         </div>
       </Link>

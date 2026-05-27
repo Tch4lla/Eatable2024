@@ -32,7 +32,7 @@ const PostDetails = () => {
     post?.imageUrl && post.imageUrl.includes('cloudinary.com')
       ? post.imageUrl.replace(
           '/upload/',
-          '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
+          '/upload/q_auto,f_auto,w_800,c_limit/'
         )
       : post?.imageUrl;
 
@@ -104,6 +104,7 @@ const PostDetails = () => {
               }`}
               loading="lazy"
               onLoad={() => setIsImageLoaded(true)}
+              onError={() => setIsImageLoaded(true)}
             />
           </div>
           <div className="post_details-info">
