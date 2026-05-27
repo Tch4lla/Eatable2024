@@ -5,7 +5,7 @@ import { useUserContext } from '@/context/AuthContext';
 import { useGetPostById } from '@/lib/react-query/queriesAndMutations';
 import { useGetUserPosts } from '@/lib/react-query/queriesAndMutations';
 import { useDeletePost } from '@/lib/react-query/queriesAndMutations';
-import { multiFormatDateString } from '@/lib/utils';
+import { multiFormatDateString, normalizeImageUrl } from '@/lib/utils';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
 
@@ -28,23 +28,21 @@ const PostDetails = () => {
   const { mutate: deletePost } = useDeletePost();
 
   // Optimize post image URL with responsive sizing
+  const rawPostUrl = normalizeImageUrl(post?.imageUrl);
   const postImageUrl =
-    post?.imageUrl && post.imageUrl.includes('cloudinary.com')
-      ? post.imageUrl.replace(
-          '/upload/',
-          '/upload/q_auto,f_auto,w_800,c_limit/'
-        )
-      : post?.imageUrl;
+    rawPostUrl && rawPostUrl.includes('cloudinary.com')
+      ? rawPostUrl.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
+      : rawPostUrl || undefined;
 
   // Optimize profile image URL
+  const rawProfileUrl = normalizeImageUrl(post?.creator?.imageUrl);
   const profileImageUrl =
-    post?.creator?.imageUrl &&
-    post?.creator?.imageUrl.includes('cloudinary.com')
-      ? post?.creator?.imageUrl.replace(
+    rawProfileUrl && rawProfileUrl.includes('cloudinary.com')
+      ? rawProfileUrl.replace(
           '/upload/',
           '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
         )
-      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
+      : rawProfileUrl || '/assets/icons/profile-placeholder.svg';
 
   const handleDeletePost = () => {
     deletePost({ postId: id!, imageId: post?.imageId });

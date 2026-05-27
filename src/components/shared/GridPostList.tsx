@@ -26,14 +26,12 @@ const GridPostList = ({
             className="grid-post_link"
           >
             <img
-              src={
-                post.imageUrl && post.imageUrl.includes('cloudinary.com')
-                  ? post.imageUrl.replace(
-                      '/upload/',
-                      '/upload/q_auto,f_auto,w_auto,dpr_auto,c_limit/'
-                    )
-                  : post.imageUrl
-              }
+              src={(() => {
+                const url = (post.imageUrl || '').replace('//cloud.appwrite.io', '//fra.cloud.appwrite.io');
+                return url.includes('cloudinary.com')
+                  ? url.replace('/upload/', '/upload/q_auto,f_auto,w_400,c_limit/')
+                  : url || undefined;
+              })()}
               alt="post"
               className="h-full w-full object-cover"
               loading="lazy"
@@ -43,16 +41,12 @@ const GridPostList = ({
             {showUser && (
               <div className="flex items-center justify-start gap-2 flex-1">
                 <img
-                  src={
-                    post.creator.imageUrl &&
-                    post.creator.imageUrl.includes('cloudinary.com')
-                      ? post.creator.imageUrl.replace(
-                          '/upload/',
-                          '/upload/w_64,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
-                        )
-                      : post.creator.imageUrl ||
-                        '/assets/icons/profile-placeholder.svg'
-                  }
+                  src={(() => {
+                    const url = (post.creator.imageUrl || '').replace('//cloud.appwrite.io', '//fra.cloud.appwrite.io');
+                    return url.includes('cloudinary.com')
+                      ? url.replace('/upload/', '/upload/w_64,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/')
+                      : url || '/assets/icons/profile-placeholder.svg';
+                  })()}
                   alt="creator"
                   className="h-8 w-8 rounded-full object-cover"
                   loading="lazy"

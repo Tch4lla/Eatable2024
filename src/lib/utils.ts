@@ -56,3 +56,8 @@ export const checkIsLiked = (likeList: string[], userId: string) => {
 };
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
+
+export function normalizeImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  return url.replace('//cloud.appwrite.io', '//fra.cloud.appwrite.io');
+}

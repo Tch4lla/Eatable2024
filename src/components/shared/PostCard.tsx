@@ -1,5 +1,5 @@
 import { useUserContext } from '@/context/AuthContext';
-import { formatDateString } from '@/lib/utils';
+import { formatDateString, normalizeImageUrl } from '@/lib/utils';
 import { Models } from 'appwrite';
 import { Link } from 'react-router-dom';
 import PostStats from './PostStats';
@@ -16,23 +16,21 @@ const PostCard = ({ post }: PostCardProps) => {
   if (!post.creator) return null;
 
   // Optimize profile image URL
+  const rawProfileUrl = normalizeImageUrl(post?.creator?.imageUrl);
   const profileImageUrl =
-    post?.creator?.imageUrl &&
-    post?.creator?.imageUrl.includes('cloudinary.com')
-      ? post.creator.imageUrl.replace(
+    rawProfileUrl && rawProfileUrl.includes('cloudinary.com')
+      ? rawProfileUrl.replace(
           '/upload/',
           '/upload/w_100,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35,q_auto,f_auto/'
         )
-      : post?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg';
+      : rawProfileUrl || '/assets/icons/profile-placeholder.svg';
 
   // Optimize post image URL with responsive sizing
+  const rawPostUrl = normalizeImageUrl(post.imageUrl);
   const postImageUrl =
-    post.imageUrl && post.imageUrl.includes('cloudinary.com')
-      ? post.imageUrl.replace(
-          '/upload/',
-          '/upload/q_auto,f_auto,w_800,c_limit/'
-        )
-      : post.imageUrl || '/assets/icons/profile-placeholder.svg';
+    rawPostUrl && rawPostUrl.includes('cloudinary.com')
+      ? rawPostUrl.replace('/upload/', '/upload/q_auto,f_auto,w_800,c_limit/')
+      : rawPostUrl || '/assets/icons/profile-placeholder.svg';
 
   return (
     <div className="post-card">

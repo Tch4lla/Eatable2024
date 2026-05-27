@@ -45,15 +45,12 @@ const TopBar = () => {
                 className="flex-center gap-3"
               >
                 <img
-                  src={
-                    user.imageUrl && user.imageUrl.includes('cloudinary.com')
-                      ? user.imageUrl.replace(
-                          '/upload/',
-                          '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/'
-                        )
-                      : user.imageUrl ||
-                        '/assets/images/profile-placeholder.svg'
-                  }
+                  src={(() => {
+                    const url = (user.imageUrl || '').replace('//cloud.appwrite.io', '//fra.cloud.appwrite.io');
+                    return url.includes('cloudinary.com')
+                      ? url.replace('/upload/', '/upload/w_400,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/')
+                      : url || '/assets/images/profile-placeholder.svg';
+                  })()}
                   alt="profile-picture"
                   className="h-8 w-8 rounded-full object-cover"
                 />
