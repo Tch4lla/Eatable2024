@@ -118,15 +118,16 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const cookieFallback = localStorage.getItem('cookieFallback');
 
-    if (
-      (cookieFallback === '[]' || cookieFallback === null) &&
-      window.location.pathname !== '/' &&
-      !window.location.pathname.startsWith('/sign-')
-    ) {
-      navigate('/');
+    if (cookieFallback === null || cookieFallback === '[]') {
+      if (
+        window.location.pathname !== '/' &&
+        !window.location.pathname.startsWith('/sign-')
+      ) {
+        navigate('/');
+      }
+      return; // Guest with no session — skip API call
     }
 
-    // checkAuthUser handles cache preview + full API call
     checkAuthUser();
   }, [navigate]);
   const value = {

@@ -158,10 +158,12 @@ export const useSearchPost = (searchTerm: string) => {
   })
 }
 
-export const useGetCurrentUser = () => {
+export const useGetCurrentUser = (enabled = true) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_CURRENT_USER],
     queryFn: getCurrentUser,
+    enabled,
+    retry: false,
   });
 };
 
