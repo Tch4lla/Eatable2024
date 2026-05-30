@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useCallback,
 } from 'react';
@@ -36,6 +37,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<IUser>(INITIAL_USER);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const hasInitialized = useRef(false);
 
   const navigate = useNavigate();
 
@@ -116,6 +118,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     const cookieFallback = localStorage.getItem('cookieFallback');
 
     if (cookieFallback === null || cookieFallback === '[]') {
@@ -125,7 +130,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       ) {
         navigate('/');
       }
-      return; // Guest with no session — skip API call
+      return;
     }
 
     checkAuthUser();
