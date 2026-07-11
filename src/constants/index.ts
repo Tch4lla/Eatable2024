@@ -26,6 +26,26 @@ export const sidebarLinks = [
     },
 ];
 
+// Canonical dietary tags. No spaces — createPost/updatePost strip all
+// spaces from the tags string before splitting, so spaced labels would
+// be silently mangled (e.g. "Gluten Free" -> "GlutenFree").
+export const DIETARY_TAGS = [
+    "Vegan",
+    "Vegetarian",
+    "Pescatarian",
+    "Gluten-Free",
+    "Dairy-Free",
+    "Nut-Free",
+    "Egg-Free",
+    "Soy-Free",
+    "Shellfish-Free",
+    "Kosher",
+    "Halal",
+    "Keto",
+    "Paleo",
+    "Low-FODMAP",
+] as const;
+
 export const bottombarLinks = [
     {
         imgURL: "/assets/icons/home.svg",

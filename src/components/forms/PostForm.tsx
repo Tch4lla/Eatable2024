@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '../ui/textarea';
+import { DIETARY_TAGS } from '@/constants';
 import FileUploader from '../shared/FileUploader';
 import { PostValidation } from '@/lib/validation';
 import { useUserContext } from '@/context/AuthContext';
@@ -138,23 +139,52 @@ const PostForm = ({ post, action }: PostFormProps) => {
         <FormField
           control={form.control}
           name="tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="shad-form_label">
-                Add Tags (seperated by comma " , ")
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="text"
-                  className="shad-input"
-                  placeholder="Vegan, Gluten Free, Halal"
-                  {...field}
-                />
-              </FormControl>
+          render={({ field }) => {
+            const selected = field.value
+              ? field.value.split(',').filter(Boolean)
+              : [];
+            // Legacy posts may carry free-text tags outside the canonical
+            // list — render them as chips too so they stay removable
+            const legacyTags = selected.filter(
+              (tag) => !DIETARY_TAGS.includes(tag as any)
+            );
+            const toggleTag = (tag: string) => {
+              // Read at click time, not render time — rapid consecutive
+              // clicks would otherwise overwrite each other's selection
+              const current = (form.getValues('tags') || '')
+                .split(',')
+                .filter(Boolean);
+              const next = current.includes(tag)
+                ? current.filter((t) => t !== tag)
+                : [...current, tag];
+              field.onChange(next.join(','));
+            };
+            return (
+              <FormItem>
+                <FormLabel className="shad-form_label">Dietary Tags</FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2">
+                    {[...DIETARY_TAGS, ...legacyTags].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleTag(tag)}
+                        className={`small-medium rounded-full px-3 py-1.5 transition-colors ${
+                          selected.includes(tag)
+                            ? 'bg-primary-500 text-light-1'
+                            : 'bg-dark-4 text-light-2'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </FormControl>
 
-              <FormMessage className="shad-form_message" />
-            </FormItem>
-          )}
+                <FormMessage className="shad-form_message" />
+              </FormItem>
+            );
+          }}
         />
         <div className="flex gap-4 items-center justify-between">
           <Button

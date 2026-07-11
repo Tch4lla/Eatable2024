@@ -83,13 +83,13 @@ export async function saveUserToDB(user: {
 
 export async function signInAccount(user: { email: string, password: string }) {
 	try {
-		// Delete any stale session first; Appwrite rejects createEmailSession if one is active
+		// Delete any stale session first; Appwrite rejects session creation if one is active
 		try {
 			await account.deleteSession("current");
 		} catch {
 			// No active session — this is the normal path for first-time logins
 		}
-		const session = await account.createEmailSession(user.email, user.password)
+		const session = await account.createEmailPasswordSession(user.email, user.password)
 		return session
 	} catch (error) {
 		console.log(error)
@@ -417,12 +417,43 @@ export async function deletePost(postId: string, imageId: string) {
 }
 
 
-export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
+export async function getInfinitePosts({ pageParam }: { pageParam: string | null }) {
 	// Reduce initial load to 10 posts instead of 20
 	const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
 
 	if (pageParam) {
-		queries.push(Query.cursorAfter(pageParam.toString()))
+		queries.push(Query.cursorAfter(pageParam))
+	}
+
+	try {
+		const posts = await databases.listDocuments(
+			appwriteConfig.databaseId,
+			appwriteConfig.postCollectionId,
+			queries
+		)
+
+		if (!posts) throw Error
+
+		return posts
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+export async function getPostsByTags({ tags, pageParam }: { tags: string[], pageParam: string | null }) {
+	if (!tags || tags.length === 0) return;
+
+	// One contains-query per tag: Appwrite ANDs queries, so posts must carry
+	// every selected tag. (equal is rejected on array attributes, and arrays
+	// cannot be indexed — contains runs unindexed, fine at current scale)
+	const queries: any[] = [
+		...tags.map((tag) => Query.contains('tags', tag)),
+		Query.orderDesc('$updatedAt'),
+		Query.limit(10),
+	]
+
+	if (pageParam) {
+		queries.push(Query.cursorAfter(pageParam))
 	}
 
 	try {

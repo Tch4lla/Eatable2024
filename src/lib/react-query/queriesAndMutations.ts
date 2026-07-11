@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
-import { createPost, createUserAccount, deletePost, deleteSavedPost, deleteAccount, getCurrentUser, getInfinitePosts, getPostById, getRecentPosts, likePost, savePost, searchPosts, signInAccount, signOutAccount, updatePost, getUserById, updateUser, getUserPosts, getUsers } from '../appwrite/api'
+import { createPost, createUserAccount, deletePost, deleteSavedPost, deleteAccount, getCurrentUser, getInfinitePosts, getPostById, getPostsByTags, getRecentPosts, likePost, savePost, searchPosts, signInAccount, signOutAccount, updatePost, getUserById, updateUser, getUserPosts, getUsers } from '../appwrite/api'
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from '@/types'
 import { QUERY_KEYS } from './queryKeys'
 
@@ -139,13 +139,26 @@ export const useGetPosts = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
     queryFn: getInfinitePosts,
-    initialPageParam: 0,
+    initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => {
-      if (lastPage && lastPage.documents.length === 0) return null;
+      if (!lastPage || lastPage.documents.length === 0) return null;
 
-      const lastId = lastPage?.documents[lastPage.documents.length - 1].$id;
+      // Appwrite document IDs are strings — cursorAfter needs the raw ID
+      return lastPage.documents[lastPage.documents.length - 1].$id;
+    }
+  });
+};
 
-      return lastId ? Number(lastId) : null;
+export const useGetPostsByTags = (tags: string[]) => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.GET_POSTS_BY_TAGS, ...tags],
+    queryFn: ({ pageParam }) => getPostsByTags({ tags, pageParam }),
+    initialPageParam: null as string | null,
+    enabled: tags.length > 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.documents.length === 0) return null;
+
+      return lastPage.documents[lastPage.documents.length - 1].$id;
     }
   });
 };

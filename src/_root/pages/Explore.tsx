@@ -4,8 +4,10 @@ import { Input } from '@/components/ui/input';
 import useDebounce from '@/hooks/useDebounce';
 import {
   useGetPosts,
+  useGetPostsByTags,
   useSearchPost,
 } from '@/lib/react-query/queriesAndMutations';
+import { DIETARY_TAGS } from '@/constants';
 import {
   useEffect,
   useState,
@@ -25,12 +27,23 @@ const Explore = () => {
     rootMargin: '100px',
   });
 
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const isFiltering = selectedTags.length > 0;
+
+  const browseQuery = useGetPosts();
+  const filteredQuery = useGetPostsByTags(selectedTags);
   const {
     data: posts,
     fetchNextPage,
     hasNextPage,
     isLoading: isPostsLoading,
-  } = useGetPosts();
+  } = isFiltering ? filteredQuery : browseQuery;
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +92,7 @@ const Explore = () => {
     }
   }, []);
 
-  if (!posts && isPostsLoading) {
+  if (!browseQuery.data && browseQuery.isLoading) {
     return (
       <div className="flex-center w-full h-full">
         <Loader />
@@ -114,18 +127,37 @@ const Explore = () => {
         </div>
       </div>
 
-      <div className="flex-between w-full max-w-5xl mt-16 mb-7">
-        <h3 className="body-bold md:h3-bold">Popular Today</h3>
+      <div className="flex flex-wrap gap-2 w-full max-w-5xl mt-6">
+        {DIETARY_TAGS.map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => toggleTag(tag)}
+            className={`small-medium rounded-full px-3 py-1.5 transition-colors ${
+              selectedTags.includes(tag)
+                ? 'bg-primary-500 text-light-1'
+                : 'bg-dark-4 text-light-2'
+            }`}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
 
-        <div className="flex-center gap-3 bg-dark-3 rounded-xl px-4 py-2 cursor-pointer">
-          <p className="small-medium md:base-medium text-light-2">All</p>
-          <img
-            src="/assets/icons/filter.svg"
-            alt="filter"
-            width={20}
-            height={20}
-          />
-        </div>
+      <div className="flex-between w-full max-w-5xl mt-10 mb-7">
+        <h3 className="body-bold md:h3-bold">
+          {isFiltering ? selectedTags.join(' + ') : 'Popular Today'}
+        </h3>
+
+        {isFiltering && (
+          <button
+            type="button"
+            onClick={() => setSelectedTags([])}
+            className="small-medium text-light-3"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-9 w-full max-w-5xl">
@@ -134,8 +166,16 @@ const Explore = () => {
             isSearchFetching={isSearchFetching}
             searchedPost={searchedPosts}
           />
+        ) : isFiltering && isPostsLoading ? (
+          <div className="flex-center w-full mt-10">
+            <Loader />
+          </div>
         ) : shouldShowPosts ? (
-          <p className="text-light-4 mt-10 text-center w-full">End of Posts</p>
+          <p className="text-light-4 mt-10 text-center w-full">
+            {isFiltering
+              ? 'No posts match these dietary tags yet'
+              : 'End of Posts'}
+          </p>
         ) : (
           <Suspense
             fallback={
