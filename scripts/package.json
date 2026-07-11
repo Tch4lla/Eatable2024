@@ -1,0 +1,11 @@
+{
+  "name": "eatable-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "cloudinary": "^2.6.1",
+    "dotenv": "^16.4.5",
+    "node-appwrite": "^14.0.0"
+  }
+}
