@@ -195,10 +195,8 @@ export async function deleteFromCloudinary(publicId: string) {
         return { status: 'ok' };
     }
     try {
-        const { Client, Functions } = await import('appwrite');
-        const client = new Client()
-            .setEndpoint('https://cloud.appwrite.io/v1')
-            .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
+        const { Functions } = await import('appwrite');
+        const { client } = await import('../appwrite/config');
         const functions = new Functions(client);
         const execution = await functions.createExecution(
             functionId,
