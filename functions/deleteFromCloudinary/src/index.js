@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { Client, Functions } from 'node-appwrite';
 
 /**
  * This function handles deleting images from Cloudinary
@@ -8,10 +7,9 @@ import { Client, Functions } from 'node-appwrite';
  * - CLOUDINARY_API_KEY
  * - CLOUDINARY_API_SECRET
  *
- * @param {Object} req - The request object
- * @param {Object} res - The response object
+ * @param {Object} context - The Appwrite function context ({ req, res, log, error })
  */
-export default async function deleteFromCloudinary(req, res) {
+export default async function deleteFromCloudinary({ req, res, log, error }) {
   // Initialize Cloudinary with credentials from environment variables
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,8 +17,14 @@ export default async function deleteFromCloudinary(req, res) {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
-  // Parse the request payload
-  const payload = JSON.parse(req.payload || '{}');
+  // Parse the request payload; req.body may arrive as a string or parsed object
+  let payload = {};
+  try {
+    payload =
+      typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+  } catch {
+    payload = {};
+  }
   const { publicId } = payload;
 
   // Validate the request
@@ -55,13 +59,13 @@ export default async function deleteFromCloudinary(req, res) {
         500
       );
     }
-  } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
+  } catch (err) {
+    error('Error deleting image from Cloudinary: ' + err.message);
     return res.json(
       {
         success: false,
         message: 'Error deleting image from Cloudinary',
-        error: error.message,
+        error: err.message,
       },
       500
     );
