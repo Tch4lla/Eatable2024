@@ -74,6 +74,17 @@ const SignupForm = () => {
         });
       }
 
+      // createUserAccount falls back to an initials avatar (empty imageId) when
+      // the photo upload fails. A toast shown here would be destroyed by the
+      // full-page navigation below, so hand the warning off via sessionStorage.
+      if (
+        values.file &&
+        values.file.length > 0 &&
+        !(newUser as { imageId?: string }).imageId
+      ) {
+        sessionStorage.setItem('eatable_photo_upload_warning', '1');
+      }
+
       const session = await signInAccount({
         email: values.email,
         password: values.password,
