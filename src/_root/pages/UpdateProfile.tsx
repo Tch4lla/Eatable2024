@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -56,6 +56,20 @@ const UpdateProfile = () => {
   const { data: currentUser } = useGetUserById(id || '');
   const { mutateAsync: updateUser, isPending: isLoadingUpdate } = useUpdateUser();
   const { mutateAsync: deleteAccount, isPending: isDeletingAccount } = useDeleteAccount();
+
+  // defaultValues are captured before the auth context loads, leaving the
+  // fields empty behind their placeholders — refill once the profile arrives
+  useEffect(() => {
+    if (currentUser) {
+      form.reset({
+        file: [],
+        name: currentUser.name,
+        username: currentUser.username,
+        email: currentUser.email,
+        bio: currentUser.bio || '',
+      });
+    }
+  }, [currentUser]);
 
   if (!currentUser)
     return (

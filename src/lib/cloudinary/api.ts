@@ -24,13 +24,8 @@ export async function uploadToCloudinary(file: File) {
         const formData = new FormData();
         formData.append('file', base64Data);
         formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-
-        // Add optimization parameters
-        formData.append('quality', 'auto');
-        formData.append('fetch_format', 'auto');
-
-        // Enable eager transformations to pre-generate optimized versions
-        formData.append('eager', 'q_auto,f_auto,fl_progressive');
+        // Unsigned uploads reject transformation params like `eager` (400);
+        // optimization is applied at delivery time via buildCloudinaryUrl
 
         // Upload to Cloudinary via fetch API with timeout
         const controller = new AbortController();
@@ -48,7 +43,8 @@ export async function uploadToCloudinary(file: File) {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error('Failed to upload image to Cloudinary');
+            const errorBody = await response.json().catch(() => null);
+            throw new Error(errorBody?.error?.message || 'Failed to upload image to Cloudinary');
         }
 
         const data = await response.json();
